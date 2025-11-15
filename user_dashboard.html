@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Cổng Thông Tin Độc Giả</title>
+    <link rel="stylesheet" href="css/user_home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav class="sidebar">
+            <div class="brand"><i class="fas fa-user-graduate"></i> <span>Góc Độc Giả</span></div>
+            <ul class="menu">
+                <li class="active" onclick="switchTab('home', this)"><a href="#"><i class="fas fa-home"></i> Tổng Quan</a></li>
+                <li onclick="switchTab('library', this)"><a href="#"><i class="fas fa-book-open"></i> Thư Viện Sách</a></li>
+                <li onclick="switchTab('loans', this)"><a href="#"><i class="fas fa-history"></i> Quản Lý Mượn/Trả</a></li>
+                <li onclick="switchTab('fines', this)"><a href="#"><i class="fas fa-coins"></i> Tiền Phạt & Vi Phạm</a></li>
+                <li class="logout"><a href="#" onclick="DB.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+            </ul>
+        </nav>
+        <main class="main-content">
+            <div class="top-bar"><h2 id="page-title">Tổng Quan</h2><div class="user-profile"><span id="welcome-user">Độc giả</span> <img src="https://via.placeholder.com/40"></div></div>
+            <div id="tab-home" class="tab-section active">
+                <div class="stats-row">
+                    <div class="stat-card"><div class="stat-info"><h2 id="stat-borrowing">0</h2><p>Đang mượn</p></div><div class="mini-chart" style="background: #1890ff"></div></div>
+                    <div class="stat-card"><div class="stat-info"><h2 id="stat-reserved">0</h2><p>Đang đặt trước</p></div><div class="mini-chart" style="background: #faad14"></div></div>
+                    <div class="stat-card"><div class="stat-info"><h2 id="stat-fine" style="color: red">0 đ</h2><p>Tiền phạt nợ</p></div><div class="mini-chart" style="background: #ff4d4f"></div></div>
+                </div>
+                <div class="panel"><h3>🔔 Thông báo mới</h3><p>Chào mừng bạn đến với thư viện số DLib.</p></div>
+            </div>
+            <div id="tab-library" class="tab-section">
+                <div class="toolbar"><div class="search-group"><i class="fas fa-search"></i><input type="text" id="search-book" placeholder="Tìm sách..." onkeyup="renderLibrary()"></div></div>
+                <div id="library-grid" class="book-grid"></div>
+            </div>
+            <div id="tab-loans" class="tab-section">
+                <div class="panel"><h3>📚 Sách Tôi Đang Mượn</h3><table class="custom-table"><thead><tr><th>Tên Sách</th><th>Ngày Mượn</th><th>Hạn Trả</th><th>Trạng Thái</th><th>Hành Động</th></tr></thead><tbody id="loan-list"></tbody></table></div>
+            </div>
+            <div id="tab-fines" class="tab-section"><div class="panel"><h3>💸 Danh Sách Phạt</h3><table class="custom-table"><thead><tr><th>Tên Sách</th><th>Ngày Trả</th><th>Lý Do</th><th>Số Tiền</th></tr></thead><tbody><tr><td colspan="4" style="text-align:center">Không có khoản phạt nào.</td></tr></tbody></table></div></div>
+        </main>
+    </div>
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-box">
+            <div class="modal-header"><h3>Thông Tin Sách</h3><span class="close-modal" onclick="closeModal()">&times;</span></div>
+            <div class="modal-body"><div class="detail-layout"><img id="d-img" src="" class="detail-img"><div class="detail-info"><h2 id="d-name">...</h2><p><strong>Tác giả:</strong> <span id="d-author">...</span></p><p><strong>NXB:</strong> <span id="d-pub">...</span></p><p><strong>Tình trạng:</strong> <span id="d-stock">...</span></p><p><strong>Mô tả:</strong></p><p id="d-desc" style="font-size: 13px; color: #555;">...</p></div></div></div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="closeModal()">Đóng</button><button id="btn-action" class="btn-save">Mượn Ngay</button></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/data.js"></script>
+    <script src="js/user_main.js"></script>
+</body>
+</html>

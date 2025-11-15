@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - DLib K12</title>
+    <link rel="stylesheet" href="css/admin_dash.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav class="sidebar">
+    <div class="brand">
+        <i class="fas fa-book-reader"></i> <span>DLib K12</span>
+    </div>
+    <ul class="menu">
+        <li class="menu-dashboard">
+            <a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        </li>
+        
+        <li class="has-submenu menu-resources">
+            <a href="#" onclick="toggleSubmenu(event)">
+                <i class="fas fa-database"></i> Quản lý tài nguyên số 
+                <i class="fas fa-chevron-down arrow"></i>
+            </a>
+            <ul class="submenu">
+                <li><a href="admin_resources.html"><i class="fas fa-file-pdf"></i> Ebook & Tài liệu</a></li>
+            </ul>
+        </li>
+
+        <li class="menu-books">
+            <a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a>
+        </li>
+        
+        <li class="menu-users">
+            <a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a>
+        </li>
+        
+        <li class="logout">
+            <a href="#" onclick="DB.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        </li>
+    </ul>
+</nav>
+        <main class="main-content">
+            <div class="top-bar">
+                <h2>Dashboard Tổng Quan</h2>
+                <div class="user-profile">Admin <img src="https://via.placeholder.com/40"></div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-info"><h2 id="total-users">0</h2><p>Thành viên</p></div>
+                    <div class="mini-chart" style="background: conic-gradient(#1890ff 70%, #eee 0)"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info"><h2 id="total-resources">0</h2><p>Tài nguyên</p></div>
+                    <div class="mini-chart" style="background: conic-gradient(#52c41a 50%, #eee 0)"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info"><h2>1,250</h2><p>Lượt truy cập</p></div>
+                    <div class="mini-chart" style="background: conic-gradient(#f5222d 80%, #eee 0)"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/data.js"></script>
+    <script src="js/admin_dash.js"></script>
+</body>
+</html>
