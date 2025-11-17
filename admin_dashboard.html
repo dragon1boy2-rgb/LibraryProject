@@ -9,57 +9,118 @@
 <body>
     <div class="wrapper">
         <nav class="sidebar">
-    <div class="brand">
-        <i class="fas fa-book-reader"></i> <span>DLib K12</span>
-    </div>
-    <ul class="menu">
-        <li class="menu-dashboard">
-            <a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-        </li>
-        
-        <li class="has-submenu menu-resources">
-            <a href="#" onclick="toggleSubmenu(event)">
-                <i class="fas fa-database"></i> Quản lý tài nguyên số 
-                <i class="fas fa-chevron-down arrow"></i>
-            </a>
-            <ul class="submenu">
-                <li><a href="admin_resources.html"><i class="fas fa-file-pdf"></i> Ebook & Tài liệu</a></li>
+            <div class="brand"><i class="fas fa-book-reader"></i> <span>DLib K12</span></div>
+            <ul class="menu">
+                <li class="active"><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li class="has-submenu">
+                    <a href="#" onclick="toggleSubmenu(event)"><i class="fas fa-database"></i> Quản lý tài nguyên số <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="admin_resources.html"><i class="fas fa-file-pdf"></i> Ebook & Tài liệu</a></li>
+                    </ul>
+                </li>
+                <li><a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a></li>
+                <li><a href="admin_loans.html"><i class="fas fa-clipboard-list"></i> Quản lý Mượn Trả</a></li>
+                <li><a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a></li>
+                <li class="logout"><a href="#" onclick="DB.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
             </ul>
-        </li>
+        </nav>
 
-        <li class="menu-books">
-            <a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a>
-        </li>
-        
-        <li class="menu-users">
-            <a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a>
-        </li>
-        
-        <li class="logout">
-            <a href="#" onclick="DB.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
-        </li>
-    </ul>
-</nav>
         <main class="main-content">
             <div class="top-bar">
                 <h2>Dashboard Tổng Quan</h2>
                 <div class="user-profile">Admin <img src="https://via.placeholder.com/40"></div>
             </div>
 
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-info"><h2 id="total-users">0</h2><p>Thành viên</p></div>
-                    <div class="mini-chart" style="background: conic-gradient(#1890ff 70%, #eee 0)"></div>
+            <div class="dashboard-grid top-row">
+                <div class="filter-card">
+                    <label>Thời gian thống kê</label>
+                    <select id="time-filter" onchange="updateDateRange()">
+                        <option value="this_week">Tuần này</option>
+                        <option value="last_week">Tuần trước</option>
+                        <option value="this_month" selected>Tháng này</option>
+                        <option value="last_month">Tháng trước</option>
+                        <option value="this_year">Năm nay</option>
+                    </select>
+                    <div class="date-range" id="date-display">Đang tải...</div>
                 </div>
+
                 <div class="stat-card">
-                    <div class="stat-info"><h2 id="total-resources">0</h2><p>Tài nguyên</p></div>
-                    <div class="mini-chart" style="background: conic-gradient(#52c41a 50%, #eee 0)"></div>
+                    <div class="stat-text">
+                        <h2 id="total-users" style="color: #722ed1;">0</h2>
+                        <p>Thành viên</p>
+                    </div>
+                    <div class="mini-chart" style="background: conic-gradient(#722ed1 70%, #eee 0);"></div>
                 </div>
+
                 <div class="stat-card">
-                    <div class="stat-info"><h2>1,250</h2><p>Lượt truy cập</p></div>
-                    <div class="mini-chart" style="background: conic-gradient(#f5222d 80%, #eee 0)"></div>
+                    <div class="stat-text">
+                        <h2 style="color: #1890ff;">114</h2>
+                        <p>Lượt Tương tác</p>
+                    </div>
+                    <div class="mini-chart" style="background: conic-gradient(#1890ff 40%, #52c41a 40% 80%, #eee 0);"></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-text">
+                        <h2 id="total-resources" style="color: #f5222d;">0</h2>
+                        <p>Tổng Tài nguyên</p>
+                    </div>
+                    <div class="mini-chart" style="background: conic-gradient(#f5222d 60%, #faad14 60% 85%, #1890ff 85% 100%);"></div>
                 </div>
             </div>
+
+            <div class="dashboard-grid middle-row">
+                <div class="panel chart-panel">
+                    <h3>Biểu đồ thống kê Toàn trường truy cập</h3>
+                    <div class="bar-chart">
+                        <div class="bar-col"><div class="bar" style="height: 90%"></div><span>Khối 1</span></div>
+                        <div class="bar-col"><div class="bar" style="height: 20%"></div><span>Khối 2</span></div>
+                        <div class="bar-col"><div class="bar" style="height: 50%"></div><span>Khối 3</span></div>
+                        <div class="bar-col"><div class="bar" style="height: 35%"></div><span>Khối 4</span></div>
+                        <div class="bar-col"><div class="bar" style="height: 40%"></div><span>GV</span></div>
+                    </div>
+                </div>
+
+                <div class="panel list-panel">
+                    <h3>Top tài nguyên xem nhiều nhất</h3>
+                    <ul class="item-list" id="top-resources-list">
+                        </ul>
+                </div>
+
+                <div class="panel chart-panel">
+                    <h3>Biểu đồ thống kê Tương tác</h3>
+                    <div class="bar-chart">
+                        <div class="bar-col"><div class="bar purple" style="height: 80%"></div><span>Sách</span></div>
+                        <div class="bar-col"><div class="bar purple" style="height: 30%"></div><span>Ebook</span></div>
+                        <div class="bar-col"><div class="bar purple" style="height: 20%"></div><span>Video</span></div>
+                        <div class="bar-col"><div class="bar purple" style="height: 40%"></div><span>Podcast</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid bottom-row">
+                <div class="panel list-panel">
+                    <h3>Tài nguyên số mới</h3>
+                    <ul class="item-list" id="new-resources-list">
+                        </ul>
+                </div>
+
+                <div class="panel chart-panel center-content">
+                    <h3>Nguồn tài nguyên</h3>
+                    <div class="pie-chart-large" style="width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(#722ed1 0 70%, #1890ff 70% 100%); margin: 0 auto;"></div>
+                    <div class="legend">
+                        <span><span class="dot purple" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#722ed1;margin-right:5px"></span> DLibK12</span>
+                        <span><span class="dot blue" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1890ff;margin-right:5px"></span> Nội sinh</span>
+                    </div>
+                </div>
+
+                <div class="panel list-panel">
+                    <h3>Sách giấy mới</h3>
+                    <ul class="item-list" id="new-books-list">
+                        </ul>
+                </div>
+            </div>
+
         </main>
     </div>
 

@@ -19,6 +19,7 @@
                     </ul>
                 </li>
                 <li><a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a></li>
+                <li><a href="admin_loans.html"><i class="fas fa-clipboard-list"></i> Quản lý Mượn Trả</a></li>
                 <li class="active"><a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a></li>
                 <li class="logout"><a href="#" onclick="DB.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
             </ul>
@@ -33,7 +34,7 @@
             <div class="toolbar">
                 <div class="search-group">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Tìm tên, email..." onkeyup="handleSearch()">
+                    <input type="text" id="search-input" placeholder="Tìm tên, email, mã số..." onkeyup="handleSearch()">
                 </div>
                 <button class="btn-add-new" onclick="openModal()">
                     <i class="fas fa-user-plus"></i> Thêm Tài Khoản
@@ -45,9 +46,7 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Tên Đăng Nhập</th>
-                            <th>Họ Tên</th>
-                            <th>Email</th>
+                            <th>Thông Tin Cá Nhân</th> <th>Email</th>
                             <th>Vai Trò</th>
                             <th>Hành Động</th>
                         </tr>
@@ -68,14 +67,14 @@
                 <input type="hidden" id="u-id">
                 
                 <div class="form-group">
-                    <label>Tên đăng nhập (Không thể sửa)</label>
-                    <input type="text" id="u-username" placeholder="Ví dụ: nguyenvana">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" id="u-username" placeholder="username">
                 </div>
 
                 <div class="form-group">
                     <label>Mật khẩu</label>
-                    <input type="password" id="u-password" placeholder="Nhập mật khẩu mới...">
-                    <small style="color: #888; font-style: italic; display: none;" id="pass-hint">Để trống nếu không muốn đổi mật khẩu</small>
+                    <input type="password" id="u-password" placeholder="Nhập mật khẩu...">
+                    <small style="color: #888; font-style: italic; display: none;" id="pass-hint">Để trống nếu không muốn đổi</small>
                 </div>
 
                 <div class="form-group">
@@ -89,11 +88,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Vai Trò (Role)</label>
+                    <label>Vai Trò</label>
                     <select id="u-role" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
-                        <option value="user">User (Người đọc)</option>
+                        <option value="student">Sinh Viên</option>
+                        <option value="lecturer">Giảng Viên</option>
                         <option value="admin">Admin (Quản trị viên)</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Mã Sinh Viên / Giảng Viên</label>
+                    <input type="text" id="u-code" placeholder="Nhập MSV hoặc MGV">
                 </div>
             </div>
             <div class="modal-footer">

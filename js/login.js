@@ -1,102 +1,78 @@
 // js/login.js
 
-// --- 1. XỬ LÝ HIỆU ỨNG TRƯỢT (SLIDER ANIMATION) ---
+// --- 1. XỬ LÝ HIỆU ỨNG TRƯỢT (ANIMATION) ---
 const signUpButton = document.getElementById('signUp');
 const signInButton = document.getElementById('signIn');
 const container = document.getElementById('container');
 
-// Khi bấm nút Đăng Ký trên Overlay
+// Nút Đăng Ký trên Overlay (Màn hình lớn)
 if (signUpButton) {
     signUpButton.addEventListener('click', () => {
         container.classList.add("right-panel-active");
     });
 }
 
-// Khi bấm nút Đăng Nhập trên Overlay
+// Nút Đăng Nhập trên Overlay (Màn hình lớn)
 if (signInButton) {
     signInButton.addEventListener('click', () => {
         container.classList.remove("right-panel-active");
     });
 }
 
-// Hàm dùng cho giao diện Mobile (bấm link text)
+// Hàm chuyển đổi form (Dùng cho Mobile)
 function toggleForm() {
     container.classList.toggle("right-panel-active");
 }
 
 
-// --- 2. XỬ LÝ ĐĂNG NHẬP (LOGIN) ---
-async function handleLogin(e) {
-    e.preventDefault(); // Ngăn không cho trang web tải lại
-
-    const userIn = document.getElementById('login-user').value;
-    const passIn = document.getElementById('login-pass').value;
-    const btn = e.target.querySelector('button');
-
-    // Hiệu ứng nút bấm đang tải
-    const oldText = btn.innerText;
-    btn.innerText = "Đang kiểm tra...";
-    btn.disabled = true;
-
-    try {
-        // Gọi hàm login từ file data.js (kết nối Supabase)
-        const user = await DB.login(userIn, passIn);
-
-        if (user) {
-            // 1. Lưu thông tin người dùng vào bộ nhớ trình duyệt
-            sessionStorage.setItem('currentUser', JSON.stringify(user));
-            
-            // 2. Thông báo chào mừng
-            // alert(`Đăng nhập thành công! Xin chào ${user.fullname || user.username}`);
-
-            // 3. KIỂM TRA QUYỀN ĐỂ CHUYỂN TRANG (Quan trọng)
-            if (user.role === 'admin') {
-                // Nếu là Admin -> Vào trang quản trị
-                window.location.href = 'admin_dashboard.html';
-            } else {
-                // Nếu là User thường -> Vào trang chủ dành cho người đọc
-                window.location.href = 'user_dashboard.html';
-            }
-
-        } else {
-            alert("❌ Sai tên đăng nhập hoặc mật khẩu!");
-        }
-    } catch (error) {
-        console.error(error);
-        alert("Lỗi kết nối hệ thống!");
-    } finally {
-        // Trả lại trạng thái nút bấm
-        btn.innerText = oldText;
-        btn.disabled = false;
+// --- 2. LOGIC ĐỔI PLACEHOLDER (Mã SV / Mã GV) ---
+// Hàm này được gọi khi thay đổi select box "Bạn là..."
+function toggleIdInput() {
+    const role = document.getElementById('reg-role').value;
+    const input = document.getElementById('reg-code');
+    
+    if (role === 'student') {
+        input.placeholder = "Nhập Mã Sinh Viên";
+    } else {
+        input.placeholder = "Nhập Mã Giảng Viên";
     }
 }
 
 
 // --- 3. XỬ LÝ ĐĂNG KÝ (REGISTER) ---
 async function handleRegister(e) {
-    e.preventDefault();
+    e.preventDefault(); // Ngăn load lại trang
 
-    const userIn = document.getElementById('reg-user').value;
-    const nameIn = document.getElementById('reg-name').value;
-    const emailIn = document.getElementById('reg-email').value;
-    const passIn = document.getElementById('reg-pass').value;
+    // Lấy dữ liệu từ form
+    const role = document.getElementById('reg-role').value;
+    const userIn = document.getElementById('reg-user').value.trim();
+    const passIn = document.getElementById('reg-pass').value.trim();
+    const nameIn = document.getElementById('reg-name').value.trim();
+    const emailIn = document.getElementById('reg-email').value.trim();
+    const codeIn = document.getElementById('reg-code').value.trim(); // Mã SV hoặc GV
+
+    // Kiểm tra dữ liệu
+    if (!userIn || !passIn || !codeIn) {
+        alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
+        return;
+    }
+
     const btn = e.target.querySelector('button');
-
-    btn.innerText = "Đang tạo...";
+    const oldText = btn.innerText;
+    btn.innerText = "Đang xử lý...";
     btn.disabled = true;
 
     try {
-        // Gọi hàm register từ file data.js
-        // Hàm này mặc định sẽ tạo user có role là 'user'
-        const result = await DB.register(userIn, passIn, nameIn, emailIn);
+        // Gọi hàm register trong data.js (truyền đủ 6 tham số)
+        const result = await DB.register(userIn, passIn, nameIn, emailIn, role, codeIn);
 
         if (result.success) {
             alert("✅ Đăng ký thành công! Vui lòng đăng nhập.");
             
-            // Tự động trượt về form đăng nhập
+            // Tự động chuyển về form đăng nhập
             container.classList.remove("right-panel-active");
             
-            // Tự động điền tên đăng nhập cho tiện
+            // Tự động điền username vừa tạo để tiện đăng nhập
             document.getElementById('login-user').value = userIn;
             document.getElementById('login-pass').focus();
         } else {
@@ -104,9 +80,49 @@ async function handleRegister(e) {
         }
     } catch (error) {
         console.error(error);
-        alert("Lỗi hệ thống!");
+        alert("Lỗi hệ thống! Vui lòng thử lại sau.");
     } finally {
-        btn.innerText = "Đăng Ký";
+        btn.innerText = oldText;
+        btn.disabled = false;
+    }
+}
+
+
+// --- 4. XỬ LÝ ĐĂNG NHẬP (LOGIN) ---
+async function handleLogin(e) {
+    e.preventDefault();
+
+    const userIn = document.getElementById('login-user').value.trim();
+    const passIn = document.getElementById('login-pass').value.trim();
+    const btn = e.target.querySelector('button');
+
+    const oldText = btn.innerText;
+    btn.innerText = "Đang kiểm tra...";
+    btn.disabled = true;
+
+    try {
+        // Gọi hàm login từ data.js
+        const user = await DB.login(userIn, passIn);
+
+        if (user) {
+            // Lưu thông tin người dùng vào Session
+            sessionStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // Chuyển hướng dựa trên Role (Vai trò)
+            if (user.role === 'admin') {
+                window.location.href = 'admin_dashboard.html';
+            } else {
+                // Sinh viên hoặc Giảng viên đều vào trang Dashboard chung
+                window.location.href = 'user_dashboard.html';
+            }
+        } else {
+            alert("❌ Sai tên đăng nhập hoặc mật khẩu!");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Lỗi kết nối mạng hoặc Server!");
+    } finally {
+        btn.innerText = oldText;
         btn.disabled = false;
     }
 }

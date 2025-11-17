@@ -1,3 +1,109 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/data.js"></script>
-<script src="js/admin_resources.js"></script>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Tài Nguyên Số</title>
+    <link rel="stylesheet" href="css/admin_books.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav class="sidebar">
+            <div class="brand"><i class="fas fa-book-reader"></i> <span>DLib K12</span></div>
+            <ul class="menu">
+                <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                
+                <li class="has-submenu active open">
+                    <a href="#" onclick="toggleSubmenu(event)">
+                        <i class="fas fa-database"></i> Quản lý tài nguyên số 
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="admin_resources.html" style="color: white; font-weight: bold;"><i class="fas fa-file-pdf"></i> Ebook & Tài liệu</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a></li>
+                <li><a href="admin_loans.html"><i class="fas fa-clipboard-list"></i> Quản lý Mượn Trả</a></li>
+                <li><a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a></li>
+                <li class="logout"><a href="#" onclick="DB.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <h2>Kho Tài Nguyên Số</h2>
+                <div class="user-profile">Admin <img src="https://via.placeholder.com/40"></div>
+            </div>
+
+            <div class="toolbar">
+                <div class="search-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Tìm kiếm tài liệu..." onkeyup="handleSearch()">
+                </div>
+                <button class="btn-add-new" onclick="openModal()">
+                    <i class="fas fa-cloud-upload-alt"></i> Upload Tài Liệu
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên Tài Liệu</th>
+                            <th>Loại</th>
+                            <th>Dung Lượng</th>
+                            <th>Ngày Tạo</th>
+                            <th>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resource-list">
+                        </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="resModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modal-title">Thêm Tài Liệu Mới</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="r-id">
+                
+                <div class="form-group">
+                    <label>Tên tài liệu</label>
+                    <input type="text" id="r-name" placeholder="Ví dụ: Giáo trình Toán Cao Cấp">
+                </div>
+
+                <div class="form-group">
+                    <label>Loại định dạng</label>
+                    <select id="r-type" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        <option value="PDF">PDF (Tài liệu đọc)</option>
+                        <option value="Ebook">Ebook (Sách điện tử)</option>
+                        <option value="Video">Video (Bài giảng)</option>
+                        <option value="Podcast">Podcast (Âm thanh)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Dung lượng / Thời lượng</label>
+                    <input type="text" id="r-size" placeholder="Ví dụ: 5MB hoặc 15 phút">
+                </div>
+                
+                </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+                <button class="btn-save" onclick="saveResource()">Lưu Lại</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/data.js"></script>
+    <script src="js/admin_resources.js"></script>
+</body>
+</html>

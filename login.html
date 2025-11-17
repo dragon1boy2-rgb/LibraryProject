@@ -17,17 +17,23 @@
         
         <div class="form-container sign-up-container">
             <form onsubmit="handleRegister(event)">
-                <h1>Tạo Tài Khoản</h1>
-                <div class="social-container">
-                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-                    <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+                <h1 style="margin-bottom: 10px;">Đăng Ký</h1>
+                
+                <div class="role-select" style="width: 100%; margin-bottom: 5px; text-align: left;">
+                    <label style="font-size: 12px; font-weight: bold;">Bạn là:</label>
+                    <select id="reg-role" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-top: 2px;" onchange="toggleIdInput()">
+                        <option value="student">Sinh Viên</option>
+                        <option value="lecturer">Giảng Viên</option>
+                    </select>
                 </div>
-                <span>hoặc sử dụng email để đăng ký</span>
+
                 <input type="text" id="reg-user" placeholder="Tên đăng nhập" required />
+                <input type="password" id="reg-pass" placeholder="Mật khẩu" required />
                 <input type="text" id="reg-name" placeholder="Họ và tên" required />
                 <input type="email" id="reg-email" placeholder="Email" required />
-                <input type="password" id="reg-pass" placeholder="Mật khẩu" required />
+                
+                <input type="text" id="reg-code" placeholder="Nhập Mã Sinh Viên" required />
+
                 <button type="submit">Đăng Ký</button>
                 <p class="mobile-link" onclick="toggleForm()">Đã có tài khoản? Đăng nhập</p>
             </form>
@@ -54,12 +60,12 @@
             <div class="overlay">
                 <div class="overlay-panel overlay-left">
                     <h1>Chào mừng trở lại!</h1>
-                    <p>Để tiếp tục kết nối với chúng tôi, vui lòng đăng nhập bằng thông tin cá nhân của bạn</p>
+                    <p>Vui lòng đăng nhập để tiếp tục sử dụng thư viện số</p>
                     <button class="ghost" id="signIn">Đăng Nhập</button>
                 </div>
                 <div class="overlay-panel overlay-right">
-                    <h1>Xin chào, Bạn mới!</h1>
-                    <p>Nhập thông tin cá nhân của bạn và bắt đầu hành trình với DLib K12</p>
+                    <h1>Thành viên mới?</h1>
+                    <p>Đăng ký ngay để truy cập kho tài liệu khổng lồ của DLib K12</p>
                     <button class="ghost" id="signUp">Đăng Ký</button>
                 </div>
             </div>
@@ -69,5 +75,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/data.js"></script>
     <script src="js/login.js"></script>
+    
+    <script>
+        function toggleIdInput() {
+            const role = document.getElementById('reg-role').value;
+            const input = document.getElementById('reg-code');
+            if (role === 'student') input.placeholder = "Nhập Mã Sinh Viên";
+            else input.placeholder = "Nhập Mã Giảng Viên";
+        }
+    </script>
 </body>
 </html>
