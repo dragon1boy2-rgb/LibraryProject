@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản Lý Sách</title>
+    <title>Quản Lý Sách - DLib K12</title>
     <link rel="stylesheet" href="css/admin_books.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -12,12 +12,17 @@
             <div class="brand"><i class="fas fa-book-reader"></i> <span>DLib K12</span></div>
             <ul class="menu">
                 <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                
                 <li class="has-submenu">
-                    <a href="#" onclick="toggleSubmenu(event)"><i class="fas fa-database"></i> Quản lý tài nguyên số <i class="fas fa-chevron-down arrow"></i></a>
+                    <a href="#" onclick="toggleSubmenu(event)">
+                        <i class="fas fa-database"></i> Quản lý tài nguyên số 
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </a>
                     <ul class="submenu">
                         <li><a href="admin_resources.html"><i class="fas fa-file-pdf"></i> Ebook & Tài liệu</a></li>
                     </ul>
                 </li>
+
                 <li class="active"><a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a></li>
                 <li><a href="admin_loans.html"><i class="fas fa-clipboard-list"></i> Quản lý Mượn Trả</a></li>
                 <li><a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a></li>
@@ -26,15 +31,36 @@
         </nav>
 
         <main class="main-content">
-            <div class="top-bar"><h2>Kho Sách</h2><div class="user-profile">Admin <img src="https://via.placeholder.com/40"></div></div>
-            <div class="toolbar">
-                <div class="search-group"><i class="fas fa-search"></i><input type="text" id="search-input" placeholder="Tìm kiếm..." onkeyup="handleSearch()"></div>
-                <button class="btn-add-new" onclick="openModal()"><i class="fas fa-plus"></i> Thêm Sách</button>
+            <div class="top-bar">
+                <h2>Kho Sách Thư Viện</h2>
+                <div class="user-profile">Admin <img src="https://via.placeholder.com/40"></div>
             </div>
+
+            <div class="toolbar">
+                <div class="search-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Tìm tên sách, tác giả, NXB..." onkeyup="handleSearch()">
+                </div>
+                <button class="btn-add-new" onclick="openModal()">
+                    <i class="fas fa-plus"></i> Thêm Sách Mới
+                </button>
+            </div>
+
             <div class="table-container">
                 <table class="custom-table">
-                    <thead><tr><th>ID</th><th>Tên Sách</th><th>Tác Giả</th><th>NXB</th><th>SL</th><th>Status</th><th>Hành Động</th></tr></thead>
-                    <tbody id="book-list"></tbody>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên Sách</th>
+                            <th>Tác Giả</th>
+                            <th>Nhà Xuất Bản</th>
+                            <th>Số Lượng</th>
+                            <th>Trạng Thái</th>
+                            <th>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="book-list">
+                        </tbody>
                 </table>
             </div>
         </main>
@@ -42,19 +68,49 @@
 
     <div class="modal-overlay" id="bookModal">
         <div class="modal-box">
-            <div class="modal-header"><h3 id="modal-title">Thêm Sách</h3><span class="close-modal" onclick="closeModal()">&times;</span></div>
+            <div class="modal-header">
+                <h3 id="modal-title">Thêm Sách Mới</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
             <div class="modal-body">
                 <input type="hidden" id="book-id">
-                <div class="form-group"><label>Tên sách</label><input type="text" id="book-name"></div>
-                <div class="form-group"><label>Tác giả</label><input type="text" id="book-author"></div>
-                <div class="form-group"><label>NXB</label><input type="text" id="book-publisher"></div>
-                <div class="form-group"><label>Số lượng</label><input type="number" id="book-stock"></div>
-                <div class="form-group"><label>Link Ảnh bìa</label><input type="text" id="book-img"></div>
-                <div class="form-group"><label>Mô tả</label><textarea id="book-desc" rows="3"></textarea></div>
+                
+                <div class="form-group">
+                    <label>Tên sách</label>
+                    <input type="text" id="book-name" placeholder="Nhập tên sách...">
+                </div>
+                <div class="form-group">
+                    <label>Tác giả</label>
+                    <input type="text" id="book-author" placeholder="Nhập tên tác giả...">
+                </div>
+                
+                <div class="form-group">
+                    <label>Nhà xuất bản</label>
+                    <input type="text" id="book-publisher" placeholder="Nhập tên NXB...">
+                </div>
+
+                <div class="form-group">
+                    <label>Số lượng trong kho</label>
+                    <input type="number" id="book-stock" placeholder="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Link Ảnh bìa (URL)</label>
+                    <input type="text" id="book-img" placeholder="https://example.com/anh-bia.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label>Mô tả ngắn</label>
+                    <textarea id="book-desc" rows="3" placeholder="Giới thiệu về sách..."></textarea>
+                </div>
             </div>
-            <div class="modal-footer"><button class="btn-cancel" onclick="closeModal()">Hủy</button><button class="btn-save" onclick="saveBook()">Lưu</button></div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+                <button class="btn-save" onclick="saveBook()">Lưu Lại</button>
+            </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/data.js"></script>
     <script src="js/admin_books.js"></script>

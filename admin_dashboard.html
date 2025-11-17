@@ -43,84 +43,80 @@
                     </select>
                     <div class="date-range" id="date-display">Đang tải...</div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="stat-text">
-                        <h2 id="total-users" style="color: #722ed1;">0</h2>
-                        <p>Thành viên</p>
-                    </div>
+                    <div class="stat-text"><h2 id="total-users" style="color: #722ed1;">0</h2><p>Thành viên</p></div>
                     <div class="mini-chart" style="background: conic-gradient(#722ed1 70%, #eee 0);"></div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="stat-text">
-                        <h2 style="color: #1890ff;">114</h2>
-                        <p>Lượt Tương tác</p>
-                    </div>
+                    <div class="stat-text"><h2 style="color: #1890ff;">114</h2><p>Lượt Tương tác</p></div>
                     <div class="mini-chart" style="background: conic-gradient(#1890ff 40%, #52c41a 40% 80%, #eee 0);"></div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="stat-text">
-                        <h2 id="total-resources" style="color: #f5222d;">0</h2>
-                        <p>Tổng Tài nguyên</p>
-                    </div>
+                    <div class="stat-text"><h2 id="total-resources" style="color: #f5222d;">0</h2><p>Tổng Tài nguyên</p></div>
                     <div class="mini-chart" style="background: conic-gradient(#f5222d 60%, #faad14 60% 85%, #1890ff 85% 100%);"></div>
                 </div>
             </div>
 
             <div class="dashboard-grid middle-row">
                 <div class="panel chart-panel">
-                    <h3>Biểu đồ thống kê Toàn trường truy cập</h3>
-                    <div class="bar-chart">
-                        <div class="bar-col"><div class="bar" style="height: 90%"></div><span>Khối 1</span></div>
-                        <div class="bar-col"><div class="bar" style="height: 20%"></div><span>Khối 2</span></div>
-                        <div class="bar-col"><div class="bar" style="height: 50%"></div><span>Khối 3</span></div>
-                        <div class="bar-col"><div class="bar" style="height: 35%"></div><span>Khối 4</span></div>
-                        <div class="bar-col"><div class="bar" style="height: 40%"></div><span>GV</span></div>
+                    <h3>Thống kê truy cập</h3>
+                    <div class="bar-chart" style="justify-content: center; gap: 60px;">
+                        <div class="bar-col" style="width: 80px;">
+                            <span id="val-sv" style="font-weight: bold; color: #722ed1; margin-bottom: 5px;">0</span>
+                            <div class="bar" id="bar-sv" style="height: 0%; background-color: #722ed1; width: 100%;"></div>
+                            <span style="margin-top: 10px; font-weight: 600;">Sinh viên</span>
+                        </div>
+                        <div class="bar-col" style="width: 80px;">
+                            <span id="val-gv" style="font-weight: bold; color: #faad14; margin-bottom: 5px;">0</span>
+                            <div class="bar" id="bar-gv" style="height: 0%; background-color: #faad14; width: 100%;"></div>
+                            <span style="margin-top: 10px; font-weight: 600;">Giảng viên</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="panel list-panel">
                     <h3>Top tài nguyên xem nhiều nhất</h3>
-                    <ul class="item-list" id="top-resources-list">
-                        </ul>
+                    <ul class="item-list" id="top-resources-list"></ul>
                 </div>
 
                 <div class="panel chart-panel">
-                    <h3>Biểu đồ thống kê Tương tác</h3>
-                    <div class="bar-chart">
-                        <div class="bar-col"><div class="bar purple" style="height: 80%"></div><span>Sách</span></div>
-                        <div class="bar-col"><div class="bar purple" style="height: 30%"></div><span>Ebook</span></div>
-                        <div class="bar-col"><div class="bar purple" style="height: 20%"></div><span>Video</span></div>
-                        <div class="bar-col"><div class="bar purple" style="height: 40%"></div><span>Podcast</span></div>
+                    <h3>Thống kê số lượng tài liệu</h3>
+                    <div class="bar-chart" id="interaction-chart" style="justify-content: space-around; gap: 10px;">
+                        <div class="bar-col" style="width: 20%;">
+                            <span id="v-sach" style="font-weight:bold; font-size:12px; color:#722ed1; margin-bottom:5px">0</span>
+                            <div class="bar purple" id="b-sach" style="height: 0%"></div>
+                            <span>Sách</span>
+                        </div>
+                        <div class="bar-col" style="width: 20%;">
+                            <span id="v-ebook" style="font-weight:bold; font-size:12px; color:#722ed1; margin-bottom:5px">0</span>
+                            <div class="bar purple" id="b-ebook" style="height: 0%"></div>
+                            <span>Ebook</span>
+                        </div>
+                        <div class="bar-col" style="width: 20%;">
+                            <span id="v-pdf" style="font-weight:bold; font-size:12px; color:#722ed1; margin-bottom:5px">0</span>
+                            <div class="bar purple" id="b-pdf" style="height: 0%"></div>
+                            <span>PDF</span>
+                        </div>
+                        <div class="bar-col" style="width: 20%;">
+                            <span id="v-video" style="font-weight:bold; font-size:12px; color:#722ed1; margin-bottom:5px">0</span>
+                            <div class="bar purple" id="b-video" style="height: 0%"></div>
+                            <span>Video</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="dashboard-grid bottom-row">
+            <div class="dashboard-grid bottom-row" style="grid-template-columns: 1fr 1fr;">
                 <div class="panel list-panel">
                     <h3>Tài nguyên số mới</h3>
-                    <ul class="item-list" id="new-resources-list">
-                        </ul>
-                </div>
-
-                <div class="panel chart-panel center-content">
-                    <h3>Nguồn tài nguyên</h3>
-                    <div class="pie-chart-large" style="width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(#722ed1 0 70%, #1890ff 70% 100%); margin: 0 auto;"></div>
-                    <div class="legend">
-                        <span><span class="dot purple" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#722ed1;margin-right:5px"></span> DLibK12</span>
-                        <span><span class="dot blue" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1890ff;margin-right:5px"></span> Nội sinh</span>
-                    </div>
+                    <ul class="item-list" id="new-resources-list"></ul>
                 </div>
 
                 <div class="panel list-panel">
                     <h3>Sách giấy mới</h3>
-                    <ul class="item-list" id="new-books-list">
-                        </ul>
+                    <ul class="item-list" id="new-books-list"></ul>
                 </div>
             </div>
-
         </main>
     </div>
 
