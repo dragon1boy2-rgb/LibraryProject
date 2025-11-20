@@ -1,6 +1,6 @@
 // js/data.js
 
-// --- 1. CẤU HÌNH KẾT NỐI SUPABASE ---
+// --- 1. CẤU HÌNH KẾT NỐI SUPABASE (Giữ nguyên key cũ của bạn) ---
 const SUPABASE_URL = 'https://onlyphcvixxmvnrzrkkl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ubHlwaGN2aXh4bXZucnpya2tsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyMjIwNDcsImV4cCI6MjA3ODc5ODA0N30.IU2BYpZu-7Ya_daQtvLBiMvUp-A8VYR94lmnANBeSRg';
 
@@ -14,8 +14,6 @@ const DB = {
     login: async (u, p) => {
         const { data: user, error } = await _supabase.from('users').select('*').eq('username', u).eq('password', p).single();
         if (error || !user) return null;
-        
-        // Ghi log truy cập
         try { await _supabase.from('access_logs').insert([{ user_id: user.id, role: user.role }]); } catch (e) {}
         return user;
     },
@@ -42,7 +40,6 @@ const DB = {
         window.location.href = 'login.html';
     },
 
-
     // ================= THỐNG KÊ DASHBOARD =================
     getStats: async () => {
         const books = await _supabase.from('books').select('*', { count: 'exact', head: true });
@@ -64,8 +61,7 @@ const DB = {
             lecturer: data.filter(x => x.role === 'lecturer').length 
         };
     },
-    
-    // LẤY TOP SÁCH MƯỢN NHIỀU (Mới thêm)
+
     getTopBooks: async (startDate, endDate) => {
         const { data, error } = await _supabase
             .from('loans')
@@ -74,7 +70,6 @@ const DB = {
             .lte('borrow_date', endDate.toISOString());
         
         if (error || !data) return [];
-
         const counts = {};
         data.forEach(item => {
             if(item.books) {
@@ -83,7 +78,6 @@ const DB = {
                 counts[id].borrow_count++;
             }
         });
-
         return Object.values(counts).sort((a, b) => b.borrow_count - a.borrow_count).slice(0, 5);
     },
 
@@ -97,19 +91,46 @@ const DB = {
         };
     },
 
+    // ================= QUẢN LÝ SÁCH (CÓ TÍCH HỢP GOOGLE API) =================
+    getBooks: async () => { 
+        const { data } = await _supabase.from('books').select('*').order('id', { ascending: false }); 
+        return data || []; 
+    },
 
-    // ================= QUẢN LÝ SÁCH =================
-    getBooks: async () => { const { data } = await _supabase.from('books').select('*').order('id', { ascending: false }); return data || []; },
-    addBook: async (item) => { const { error } = await _supabase.from('books').insert([item]); if(error) alert(error.message); else alert("Thành công!"); },
+    // HÀM MỚI: Tìm sách Google
+    searchGoogleBooks: async (keyword) => {
+        if (!keyword) return [];
+        try {
+            const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(keyword)}&maxResults=15&langRestrict=vi`);
+            const data = await res.json();
+            if (!data.items) return [];
+            return data.items.map(item => {
+                const info = item.volumeInfo;
+                return {
+                    id: item.id, // ID dạng chuỗi của Google
+                    name: info.title,
+                    author: info.authors ? info.authors.join(', ') : 'Nhiều tác giả',
+                    publisher: info.publisher || 'NXB Quốc Tế',
+                    image_url: info.imageLinks ? info.imageLinks.thumbnail : 'https://via.placeholder.com/150',
+                    description: info.description ? info.description.substring(0, 300) + '...' : 'Không có mô tả.',
+                    stock: 0,
+                    is_google: true, // Cờ đánh dấu
+                    preview_link: info.previewLink
+                };
+            });
+        } catch (e) {
+            console.error(e); return [];
+        }
+    },
+
+    addBook: async (item) => { const { error } = await _supabase.from('books').insert([item]); if(error) alert(error.message); else alert("Đã thêm sách vào kho!"); },
     updateBook: async (id, item) => { const { error } = await _supabase.from('books').update(item).eq('id', id); return !error; },
     deleteBook: async (id) => { const { error } = await _supabase.from('books').delete().eq('id', id); if(error) alert(error.message); else alert("Đã xóa!"); },
-
 
     // ================= QUẢN LÝ TÀI NGUYÊN =================
     getResources: async () => { const { data } = await _supabase.from('resources').select('*').order('id', { ascending: false }); return data || []; },
     addResource: async (item) => { const { error } = await _supabase.from('resources').insert([item]); if(error) alert(error.message); else alert("Thành công!"); },
     deleteResource: async (id) => { const { error } = await _supabase.from('resources').delete().eq('id', id); if(error) alert(error.message); else alert("Đã xóa!"); },
-
 
     // ================= QUẢN LÝ USER =================
     getUsers: async () => { const { data } = await _supabase.from('users').select('*').order('id', { ascending: false }); return data || []; },
@@ -122,7 +143,6 @@ const DB = {
     },
     updateUser: async (id, updates) => { const { error } = await _supabase.from('users').update(updates).eq('id', id); return !error; },
     deleteUser: async (id) => { const { error } = await _supabase.from('users').delete().eq('id', id); if(error) alert(error.message); else alert("Đã xóa!"); },
-
 
     // ================= MƯỢN TRẢ =================
     getAllLoans: async () => { const { data } = await _supabase.from('loans').select('*, books(name), users(username, fullname)').order('borrow_date', { ascending: false }); return data || []; },
@@ -149,7 +169,6 @@ const DB = {
     }
 };
 
-// Global UI function
 function toggleSubmenu(event) {
     event.preventDefault(); 
     const parentLi = event.currentTarget.parentElement;

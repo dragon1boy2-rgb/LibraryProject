@@ -39,11 +39,17 @@
             <div class="toolbar">
                 <div class="search-group">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Tìm tên sách, tác giả, NXB..." onkeyup="handleSearch()">
+                    <input type="text" id="search-input" placeholder="Tìm tên sách, tác giả..." onkeyup="handleSearch()">
                 </div>
-                <button class="btn-add-new" onclick="openModal()">
-                    <i class="fas fa-plus"></i> Thêm Sách Mới
-                </button>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-add-new" style="background: #722ed1;" onclick="importBooksFromGoogle()">
+                        <i class="fas fa-cloud-download-alt"></i> Nhập từ Google
+                    </button>
+                    <button class="btn-add-new" onclick="openModal()">
+                        <i class="fas fa-plus"></i> Thêm Thủ Công
+                    </button>
+                </div>
             </div>
 
             <div class="table-container">
