@@ -43,12 +43,20 @@
                 </div>
                 
                 <div style="display: flex; gap: 10px;">
+                    <button id="btn-bulk-import" class="btn-add-new" style="background: #faad14;" onclick="bulkImportBooks()">
+                        <i class="fas fa-bolt"></i> Auto Import
+                    </button>
+
                     <button class="btn-add-new" style="background: #722ed1;" onclick="importBooksFromGoogle()">
                         <i class="fas fa-cloud-download-alt"></i> Nhập từ Google
                     </button>
+                    
                     <button class="btn-add-new" onclick="openModal()">
                         <i class="fas fa-plus"></i> Thêm Thủ Công
                     </button>
+                    <button class="btn-add-new" style="background: #faad14;" onclick="autoImportBooks()">
+    <i class="fas fa-bolt"></i> Nhập Kho Tự Động
+</button>
                 </div>
             </div>
 
@@ -119,6 +127,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/data.js"></script>
-    <script src="js/admin_books.js"></script>
-</body>
+    <script src="js/admin_books.js"></script> </body>
 </html>
