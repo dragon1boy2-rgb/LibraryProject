@@ -47,16 +47,9 @@
                         <i class="fas fa-bolt"></i> Auto Import
                     </button>
 
-                    <button class="btn-add-new" style="background: #722ed1;" onclick="importBooksFromGoogle()">
-                        <i class="fas fa-cloud-download-alt"></i> Nhập từ Google
-                    </button>
-                    
                     <button class="btn-add-new" onclick="openModal()">
                         <i class="fas fa-plus"></i> Thêm Thủ Công
                     </button>
-                    <button class="btn-add-new" style="background: #faad14;" onclick="autoImportBooks()">
-    <i class="fas fa-bolt"></i> Nhập Kho Tự Động
-</button>
                 </div>
             </div>
 
@@ -107,16 +100,6 @@
                     <label>Số lượng trong kho</label>
                     <input type="number" id="book-stock" placeholder="0">
                 </div>
-
-                <div class="form-group">
-                    <label>Link Ảnh bìa (URL)</label>
-                    <input type="text" id="book-img" placeholder="https://example.com/anh-bia.jpg">
-                </div>
-
-                <div class="form-group">
-                    <label>Mô tả ngắn</label>
-                    <textarea id="book-desc" rows="3" placeholder="Giới thiệu về sách..."></textarea>
-                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeModal()">Hủy</button>
@@ -127,5 +110,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/data.js"></script>
-    <script src="js/admin_books.js"></script> </body>
+    <script src="js/admin_books.js"></script>
+</body>
 </html>
