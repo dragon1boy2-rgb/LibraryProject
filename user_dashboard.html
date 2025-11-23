@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="css/user_home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
     <header class="site-header">
@@ -169,10 +171,13 @@
                         </div>
                         <h1 class="p-fullname" id="p-fullname">Tên Người Dùng</h1>
                         <div class="p-username" id="p-username">username</div>
+                        
                         <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="handleAvatarUpload(this)">
+                        
                         <button class="btn-edit-profile" onclick="document.getElementById('avatar-upload').click()">
                             <i class="fas fa-camera"></i> Đổi ảnh đại diện
                         </button>
+                        
                         <div class="p-meta">
                             <div><i class="fas fa-envelope"></i> <span id="p-email">email@example.com</span></div>
                             <div id="p-role-display"><i class="fas fa-id-card"></i> Sinh Viên</div>
@@ -316,6 +321,23 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="avatarCropModal">
+        <div class="modal-box" style="width: 500px;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3>Chỉnh sửa ảnh đại diện</h3>
+                <span class="close-modal" onclick="closeAvatarModal()">&times;</span>
+            </div>
+            <div style="max-height: 400px; margin-bottom: 20px; border:1px solid #eee;">
+                <img id="avatar-cropper-img" style="max-width: 100%; display: block;">
+            </div>
+            <div style="text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn-secondary-lg" onclick="closeAvatarModal()" style="font-size: 14px; padding: 10px 20px;">Hủy</button>
+                <button class="btn-primary-lg" onclick="performAvatarCrop()" style="font-size: 14px; padding: 10px 20px;">Lưu Thay Đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/data.js"></script>
     <script>function syncSearch(val){document.getElementById('search-book').value = val;}</script>

@@ -1,6 +1,6 @@
 // js/data.js
 
-// --- 1. CẤU HÌNH KẾT NỐI SUPABASE (Giữ nguyên key cũ của bạn) ---
+// --- 1. CẤU HÌNH KẾT NỐI SUPABASE ---
 const SUPABASE_URL = 'https://onlyphcvixxmvnrzrkkl.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ubHlwaGN2aXh4bXZucnpya2tsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyMjIwNDcsImV4cCI6MjA3ODc5ODA0N30.IU2BYpZu-7Ya_daQtvLBiMvUp-A8VYR94lmnANBeSRg';
 
@@ -19,7 +19,8 @@ const DB = {
     },
 
     register: async (u, p, n, e, role, idCode) => {
-        const { data: ex } = await _supabase.from('users').select('id').eq('username', u).single();
+        // Kiểm tra username trùng
+        const { data: ex } = await _supabase.from('users').select('id').eq('username', u).maybeSingle();
         if (ex) return { success: false, message: "Tên đăng nhập đã tồn tại!" };
 
         const newUser = { username: u, password: p, fullname: n, email: e, role: role };
@@ -36,8 +37,124 @@ const DB = {
     },
 
     logout: () => {
+        // Đăng xuất khỏi cả Supabase Auth (Google) và session thường
+        _supabase.auth.signOut();
         sessionStorage.removeItem('currentUser');
         window.location.href = 'login.html';
+    },
+
+    // --- TÍNH NĂNG MỚI: ĐĂNG NHẬP GOOGLE (Đã sửa lỗi trùng lặp) ---
+    
+    // 1. Gọi cửa sổ đăng nhập Google
+    loginWithGoogle: async () => {
+        const { data, error } = await _supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: window.location.href, // Quay lại trang hiện tại sau khi login
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                },
+            }
+        });
+        if (error) alert("Lỗi Google Login: " + error.message);
+    },
+
+    // 2. Xử lý sau khi Google redirect về (Bản vá lỗi trùng lặp & treo)
+    handleOAuthLogin: async () => {
+        console.log("🚀 Bắt đầu xử lý OAuth...");
+
+        // A. Đặt Timeout an toàn
+        const safetyTimeout = setTimeout(() => {
+            const container = document.getElementById('container');
+            if(container) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:20px;">
+                        <h3 style="color:red;">⚠️ Quá thời gian xác thực!</h3>
+                        <p>Hệ thống không nhận được phản hồi từ Google hoặc Supabase.</p>
+                        <button onclick="window.location.href='login.html'" style="padding:10px 20px; cursor:pointer; margin-top:10px;">Thử lại</button>
+                    </div>`;
+            }
+        }, 10000); // 10 giây
+
+        // B. Lắng nghe sự kiện Auth
+        const { data: { subscription } } = _supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log("🔹 Auth Event:", event);
+
+            if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+                console.log("✅ Tìm thấy session:", session.user.email);
+                clearTimeout(safetyTimeout); 
+                
+                try {
+                    // --- LOGIC ĐỒNG BỘ DATABASE ---
+                    const email = session.user.email;
+                    const meta = session.user.user_metadata || {};
+                    const fullName = meta.full_name || meta.name || email.split('@')[0];
+                    const avatar = meta.avatar_url;
+
+                    // === [FIX QUAN TRỌNG] === 
+                    // Thay .single() bằng .select() và lấy phần tử đầu tiên
+                    // Điều này giúp code không bị lỗi (crash) nếu lỡ DB có 2 dòng trùng email
+                    const { data: existingUsers } = await _supabase.from('users').select('*').eq('email', email);
+                    
+                    let currentUser = null;
+                    if (existingUsers && existingUsers.length > 0) {
+                        currentUser = existingUsers[0]; // Lấy người đầu tiên tìm thấy
+                    }
+
+                    // 2. Nếu chưa có -> Tạo mới
+                    if (!currentUser) {
+                        console.log("ℹ️ Đang tạo user mới...");
+                        const randomId = Math.floor(1000 + Math.random() * 9000);
+                        
+                        // Kiểm tra username trùng trước khi tạo (đề phòng)
+                        let newUsername = email.split('@')[0];
+                        const { data: checkUser } = await _supabase.from('users').select('id').eq('username', newUsername).maybeSingle();
+                        if (checkUser) {
+                             newUsername = newUsername + '_' + randomId; // Đổi tên nếu trùng
+                        }
+
+                        const newUser = {
+                            username: newUsername,
+                            password: 'google_auth_user_' + randomId,
+                            fullname: fullName,
+                            email: email,
+                            role: 'student', 
+                            student_id: 'G-' + randomId 
+                        };
+                        const { data: created, error: insertError } = await _supabase.from('users').insert([newUser]).select().single();
+                        
+                        if (insertError) throw new Error("Lỗi Insert DB: " + insertError.message);
+                        currentUser = created;
+                    }
+
+                    // 3. Hoàn tất & Chuyển trang
+                    if (currentUser) {
+                        if(avatar) localStorage.setItem('user_avatar_' + currentUser.id, avatar);
+                        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        
+                        _supabase.from('access_logs').insert([{ user_id: currentUser.id, role: currentUser.role }]).then();
+
+                        // Xóa các tham số hash trên URL cho sạch đẹp
+                        window.history.replaceState({}, document.title, window.location.pathname);
+
+                        if (currentUser.role === 'admin') window.location.href = 'admin_dashboard.html';
+                        else window.location.href = 'user_dashboard.html';
+                    }
+                } catch (err) {
+                    clearTimeout(safetyTimeout);
+                    console.error(err);
+                    alert("Lỗi xử lý dữ liệu: " + err.message);
+                    window.location.href = 'login.html';
+                }
+            }
+        });
+
+        // C. Kiểm tra session có sẵn
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) {
+            console.log("⚡ Session đã có sẵn, xử lý ngay...");
+        }
     },
 
     // ================= THỐNG KÊ DASHBOARD =================
@@ -97,7 +214,6 @@ const DB = {
         return data || []; 
     },
 
-    // HÀM MỚI: Tìm sách Google
     searchGoogleBooks: async (keyword) => {
         if (!keyword) return [];
         try {
@@ -107,14 +223,14 @@ const DB = {
             return data.items.map(item => {
                 const info = item.volumeInfo;
                 return {
-                    id: item.id, // ID dạng chuỗi của Google
+                    id: item.id,
                     name: info.title,
                     author: info.authors ? info.authors.join(', ') : 'Nhiều tác giả',
                     publisher: info.publisher || 'NXB Quốc Tế',
                     image_url: info.imageLinks ? info.imageLinks.thumbnail : 'https://via.placeholder.com/150',
                     description: info.description ? info.description.substring(0, 300) + '...' : 'Không có mô tả.',
                     stock: 0,
-                    is_google: true, // Cờ đánh dấu
+                    is_google: true,
                     preview_link: info.previewLink
                 };
             });
@@ -135,7 +251,7 @@ const DB = {
     // ================= QUẢN LÝ USER =================
     getUsers: async () => { const { data } = await _supabase.from('users').select('*').order('id', { ascending: false }); return data || []; },
     addUser: async (item) => { 
-        const { data: ex } = await _supabase.from('users').select('id').eq('username', item.username).single();
+        const { data: ex } = await _supabase.from('users').select('id').eq('username', item.username).maybeSingle();
         if (ex) { alert("Trùng tên đăng nhập!"); return false; }
         const { error } = await _supabase.from('users').insert([item]); 
         if(error) { alert(error.message); return false; }

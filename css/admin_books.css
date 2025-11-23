@@ -1,9 +1,11 @@
 /* css/admin_books.css */
 
-/* Kế thừa từ admin_dash.css, thêm phần riêng */
+/* Kế thừa style chung từ Dashboard */
 @import url('admin_dash.css'); 
 
-/* 1. Toolbar Đẹp */
+/* =========================================
+   1. TOOLBAR & SEARCH
+   ========================================= */
 .toolbar {
     display: flex;
     justify-content: space-between;
@@ -23,6 +25,7 @@
     padding: 5px 15px;
     border: 1px solid #e1e4e8;
 }
+
 .search-group input {
     border: none;
     background: transparent;
@@ -30,6 +33,7 @@
     outline: none;
     width: 250px;
 }
+
 .search-group i { color: #888; }
 
 .btn-add-new {
@@ -44,25 +48,31 @@
     transition: transform 0.2s;
     display: flex; align-items: center; gap: 8px;
 }
+
 .btn-add-new:hover { transform: translateY(-2px); }
 
-/* 2. Bảng Dữ Liệu Hiện Đại (Đã sửa lỗi hiển thị) */
+/* =========================================
+   2. BẢNG DỮ LIỆU (DATA TABLE)
+   ========================================= */
 .table-container {
     background: white;
     border-radius: 12px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.05);
     overflow: hidden;
-    overflow-x: auto; /* Thêm thanh cuộn ngang nếu bảng quá rộng */
+    overflow-x: auto;
 }
+
 .custom-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 800px; /* Đảm bảo bảng không bị co quá nhỏ */
+    min-width: 800px;
 }
+
 .custom-table thead {
     background: #f8f9fa;
     border-bottom: 2px solid #eee;
 }
+
 .custom-table th {
     padding: 18px;
     text-align: left;
@@ -70,31 +80,34 @@
     color: #444;
     font-size: 14px;
     text-transform: uppercase;
-    white-space: nowrap; /* Giữ tiêu đề trên 1 dòng */
+    white-space: nowrap;
 }
+
 .custom-table td {
     padding: 15px 18px;
     border-bottom: 1px solid #f1f1f1;
     color: #555;
     font-size: 15px;
 }
+
 .custom-table tbody tr:hover {
-    background-color: #fbfbfb; /* Hiệu ứng hover dòng */
+    background-color: #fbfbfb;
 }
 
-/* Badge trạng thái (Đã sửa lỗi xuống dòng) */
+/* Badge trạng thái */
 .status-badge {
     padding: 5px 12px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: bold;
-    white-space: nowrap;   /* QUAN TRỌNG: Ngăn chữ bị xuống dòng */
-    display: inline-block; /* QUAN TRỌNG: Giữ khối badge nguyên vẹn */
+    white-space: nowrap;
+    display: inline-block;
 }
+
 .status-ok { background: #e6fffb; color: #006d75; border: 1px solid #87e8de; }
 .status-low { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
 
-/* Nút hành động nhỏ */
+/* Nút hành động nhỏ (Sửa/Xóa) */
 .action-btn {
     width: 35px; height: 35px;
     border-radius: 8px;
@@ -104,39 +117,139 @@
     transition: 0.2s;
     display: inline-flex; justify-content: center; align-items: center;
 }
+
 .btn-edit { background: #e6f7ff; color: #1890ff; }
 .btn-edit:hover { background: #1890ff; color: white; }
 .btn-delete { background: #fff1f0; color: #ff4d4f; }
 .btn-delete:hover { background: #ff4d4f; color: white; }
 
-/* 3. MODAL (POPUP FORM) */
+/* =========================================
+   3. THANH PHÂN TRANG (PAGINATION)
+   ========================================= */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+    padding-bottom: 30px;
+}
+
+.btn-page {
+    background: white;
+    border: 1px solid #d9d9d9;
+    min-width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #666;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.btn-page:hover:not(:disabled) {
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+.btn-page:disabled {
+    background: #f5f5f5;
+    color: #ccc;
+    cursor: not-allowed;
+    border-color: #d9d9d9;
+}
+
+/* Nút số trang cụ thể */
+.page-number {
+    background: white;
+    border: 1px solid #d9d9d9;
+    min-width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #666;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.page-number:hover {
+    color: #1890ff;
+    border-color: #1890ff;
+}
+
+/* Trang đang chọn (Active) */
+.page-number.active {
+    background: #1890ff;
+    color: white;
+    border-color: #1890ff;
+    font-weight: bold;
+}
+
+/* =========================================
+   4. MODAL (GIAO DIỆN 2 CỘT)
+   ========================================= */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Nền tối mờ */
-    backdrop-filter: blur(4px); /* Hiệu ứng kính mờ */
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
     z-index: 9999;
-    display: none; /* Mặc định ẩn */
+    display: none;
     justify-content: center; align-items: center;
 }
+
 .modal-overlay.active { display: flex; }
 
+/* Khung Modal lớn hơn */
 .modal-box {
     background: white;
-    width: 400px;
-    padding: 30px;
+    width: 850px;           /* Rộng hơn để chứa 2 cột */
+    max-width: 95%;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     animation: slideDown 0.3s ease;
+    padding: 0;             /* Reset padding */
+    overflow: hidden;
 }
+
 @keyframes slideDown {
     from { transform: translateY(-50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
 
-.modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+.modal-header {
+    display: flex; justify-content: space-between; 
+    background: #f8f9fa;
+    padding: 20px 30px;
+    border-bottom: 1px solid #eee;
+    margin: 0;
+}
+
 .modal-header h3 { margin: 0; color: #333; }
 .close-modal { cursor: pointer; font-size: 20px; color: #999; }
 
+/* Body chia 2 cột */
+.modal-body {
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 300px 1fr; /* Cột ảnh 300px, Cột thông tin tự giãn */
+    gap: 30px;
+}
+
+.modal-footer {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    margin: 0;
+}
+
+/* Các nút trong Modal */
+.btn-cancel { background: #f5f5f5; color: #666; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+.btn-save { background: #1890ff; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+
+/* Form Input chung */
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #666; }
 .form-group input, .form-group textarea {
@@ -145,8 +258,74 @@
     font-size: 14px;
     font-family: inherit;
 }
-.form-group input:focus, .form-group textarea:focus { border-color: #1890ff; outline: none; }
+.form-group input:focus { border-color: #1890ff; outline: none; }
 
-.modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-.btn-cancel { background: #f5f5f5; color: #666; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
-.btn-save { background: #1890ff; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+/* --- CỘT TRÁI: UPLOAD ẢNH --- */
+.image-upload-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Vùng Dropzone giả lập */
+.upload-placeholder {
+    width: 100%;
+    height: 400px; /* Chiều cao cố định phù hợp bìa sách */
+    background: #f0f2f5;
+    border: 2px dashed #d9d9d9;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-placeholder:hover {
+    border-color: #1890ff;
+    background: #e6f7ff;
+}
+
+.upload-placeholder i {
+    font-size: 40px;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.upload-placeholder span {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Ảnh xem trước đè lên placeholder */
+#image-preview, #cropper-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Ẩn input file mặc định */
+#book-image-file { display: none; }
+
+/* --- CỘT PHẢI: THÔNG TIN --- */
+.info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Responsive: Trên Mobile sẽ chuyển về 1 cột */
+@media (max-width: 768px) {
+    .modal-body {
+        grid-template-columns: 1fr;
+    }
+    .upload-placeholder {
+        height: 300px;
+    }
+}

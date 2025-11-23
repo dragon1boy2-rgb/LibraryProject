@@ -88,7 +88,7 @@ async function handleRegister(e) {
 }
 
 
-// --- 4. XỬ LÝ ĐĂNG NHẬP (LOGIN) ---
+// --- 4. XỬ LÝ ĐĂNG NHẬP (LOGIN THƯỜNG) ---
 async function handleLogin(e) {
     e.preventDefault();
 
@@ -126,3 +126,35 @@ async function handleLogin(e) {
         btn.disabled = false;
     }
 }
+
+// --- 5. XỬ LÝ LOGIN GOOGLE ---
+
+// Được gọi khi bấm nút icon Google
+function handleGoogleBtnClick(e) {
+    e.preventDefault();
+    const btn = e.currentTarget;
+    // Hiển thị hiệu ứng loading ngay tại nút
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
+    DB.loginWithGoogle();
+}
+
+// Kiểm tra URL khi trang tải lại (sau khi Google redirect về)
+document.addEventListener('DOMContentLoaded', () => {
+    // Nếu URL chứa dấu hiệu của OAuth (access_token hoặc code)
+    if (window.location.hash.includes('access_token') || window.location.search.includes('code=')) {
+        
+        // Hiện màn hình chờ toàn trang để người dùng không bấm lung tung
+        const container = document.getElementById('container');
+        if(container) {
+            container.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center;">
+                    <h2 style="color:#1890ff; margin-bottom:15px;"><i class="fas fa-spinner fa-spin"></i> Đang xác thực Google...</h2>
+                    <p>Vui lòng chờ trong giây lát, hệ thống đang đồng bộ dữ liệu.</p>
+                </div>
+            `;
+        }
+        
+        // Gọi hàm xử lý logic OAuth trong data.js
+        DB.handleOAuthLogin();
+    }
+});

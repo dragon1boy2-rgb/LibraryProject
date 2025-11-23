@@ -6,6 +6,15 @@ if (!currentUser) window.location.href = 'login.html';
 // Set tên trên header
 document.getElementById('welcome-user').innerText = currentUser.fullname || currentUser.username;
 
+// Load Avatar từ server
+if(currentUser.avatar_url) {
+    const hAvatar = document.getElementById('header-avatar'); 
+    if(hAvatar) hAvatar.src = currentUser.avatar_url;
+}
+
+// --- BIẾN TOÀN CỤC CHO CROPPER ---
+let avatarCropper = null;
+
 // --- CẤU HÌNH GIỎ HÀNG & THẺ ---
 const BOOK_PRICE = 50000; 
 const CARD_PRICES = { '1m': 50000, '6m': 250000, '1y': 450000 };
@@ -159,8 +168,7 @@ function generateCardHTML(cardData) {
     const expiryDate = new Date(cardData.expiry);
     const issueDate = new Date(cardData.created_at);
     const formatDate = (d) => `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
-    
-    const avatarSrc = localStorage.getItem('user_avatar_' + currentUser.id) || "https://via.placeholder.com/150";
+    const avatarSrc = currentUser.avatar_url || "https://via.placeholder.com/150";
     let roleVN = "Độc Giả";
     if(cardData.role === 'student') roleVN = "Sinh Viên";
     else if(cardData.role === 'lecturer') roleVN = "Giảng Viên";
@@ -362,7 +370,6 @@ async function processCheckout() {
             }
         }
 
-        // Lưu lịch sử hóa đơn
         let oldInvoices = JSON.parse(localStorage.getItem('dlib_invoices_' + currentUser.id)) || [];
         let newInvoices = [...invoiceLog, ...oldInvoices];
         localStorage.setItem('dlib_invoices_' + currentUser.id, JSON.stringify(newInvoices));
@@ -414,7 +421,7 @@ async function handleReturn(loanId, bookId) {
     } 
 }
 
-// --- 8. RENDER PROFILE (REMOVED MINI CARD) ---
+// --- 8. RENDER PROFILE ---
 async function renderProfile() {
     document.getElementById('p-fullname').innerText = currentUser.fullname || "Chưa cập nhật";
     document.getElementById('p-username').innerText = currentUser.username;
@@ -422,14 +429,12 @@ async function renderProfile() {
     let roleText = currentUser.role === 'lecturer' ? "Giảng Viên" : (currentUser.role === 'admin' ? "Quản Trị Viên" : "Sinh Viên");
     document.getElementById('p-role-display').innerHTML = `<i class="fas fa-id-card"></i> ${roleText}`;
 
-    const savedAvatar = localStorage.getItem('user_avatar_' + currentUser.id);
-    if(savedAvatar) {
-        document.getElementById('p-avatar').src = savedAvatar;
-        const hAvatar = document.getElementById('header-avatar'); if(hAvatar) hAvatar.src = savedAvatar;
+    if(currentUser.avatar_url) {
+        document.getElementById('p-avatar').src = currentUser.avatar_url;
+        const hAvatar = document.getElementById('header-avatar'); 
+        if(hAvatar) hAvatar.src = currentUser.avatar_url;
     }
     
-    // REMOVED MINI CARD RENDER LOGIC HERE
-
     const allInvoices = JSON.parse(localStorage.getItem('dlib_invoices_' + currentUser.id)) || [];
     const totalSpent = allInvoices.reduce((sum, inv) => sum + inv.amount, 0);
     
@@ -458,21 +463,76 @@ async function renderProfile() {
     }
 }
 
-// --- 9. UPLOAD AVATAR ---
+// --- 9. UPLOAD AVATAR [ĐÃ SỬA: DÙNG CROPPER] ---
+
+// Khi người dùng chọn file
 function handleAvatarUpload(input) {
     if (input.files && input.files[0]) {
         const file = input.files[0];
-        if(file.size > 2 * 1024 * 1024) { alert("Ảnh quá lớn! Vui lòng chọn ảnh dưới 2MB."); return; }
+        // Giới hạn 5MB
+        if(file.size > 5 * 1024 * 1024) { alert("Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB."); input.value = ''; return; }
+        
         const reader = new FileReader();
         reader.onload = function(e) {
-            const base64Img = e.target.result;
-            document.getElementById('p-avatar').src = base64Img;
-            const hAvatar = document.getElementById('header-avatar'); if(hAvatar) hAvatar.src = base64Img;
-            localStorage.setItem('user_avatar_' + currentUser.id, base64Img);
-            alert("✅ Đã cập nhật ảnh đại diện thành công!");
+            // 1. Mở modal
+            const modal = document.getElementById('avatarCropModal');
+            modal.style.display = 'flex'; // Dùng flex để căn giữa
+
+            // 2. Load ảnh vào cropper
+            const imageEl = document.getElementById('avatar-cropper-img');
+            imageEl.src = e.target.result;
+
+            // 3. Khởi tạo Cropper (Hủy cũ trước nếu có)
+            if (avatarCropper) { avatarCropper.destroy(); }
+            
+            avatarCropper = new Cropper(imageEl, {
+                aspectRatio: 1, // Tỉ lệ vuông cho Avatar
+                viewMode: 1,
+                autoCropArea: 0.8,
+            });
         }
         reader.readAsDataURL(file);
     }
+}
+
+// Khi người dùng bấm "Lưu Thay Đổi" trong modal
+function performAvatarCrop() {
+    if (!avatarCropper) return;
+
+    // Lấy kết quả cắt (kích thước 300x300 cho nhẹ)
+    const canvas = avatarCropper.getCroppedCanvas({ width: 300, height: 300 });
+
+    if (canvas) {
+        // Chuyển sang Base64
+        const base64Img = canvas.toDataURL('image/jpeg', 0.8);
+
+        // 1. Cập nhật giao diện ngay
+        document.getElementById('p-avatar').src = base64Img;
+        const hAvatar = document.getElementById('header-avatar');
+        if(hAvatar) hAvatar.src = base64Img;
+
+        // 2. Lưu lên Server
+        DB.updateUser(currentUser.id, { avatar_url: base64Img }).then(success => {
+            if (success) {
+                // Cập nhật session storage
+                currentUser.avatar_url = base64Img;
+                sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                alert("✅ Đã cập nhật ảnh đại diện thành công!");
+            } else {
+                alert("Lỗi khi lưu ảnh lên hệ thống.");
+            }
+        });
+
+        // Đóng modal
+        closeAvatarModal();
+    }
+}
+
+// Đóng modal và reset input
+function closeAvatarModal() {
+    document.getElementById('avatarCropModal').style.display = 'none';
+    if (avatarCropper) { avatarCropper.destroy(); avatarCropper = null; }
+    document.getElementById('avatar-upload').value = ''; // Reset input file
 }
 
 // --- 10. INIT ---
@@ -484,6 +544,8 @@ document.addEventListener('click', function(event) {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadStats(); updateCartBadge(); 
-    const savedAvatar = localStorage.getItem('user_avatar_' + currentUser.id);
-    if(savedAvatar) { const hAvatar = document.getElementById('header-avatar'); if(hAvatar) hAvatar.src = savedAvatar; }
+    if(currentUser.avatar_url) {
+        const hAvatar = document.getElementById('header-avatar');
+        if(hAvatar) hAvatar.src = currentUser.avatar_url;
+    }
 });

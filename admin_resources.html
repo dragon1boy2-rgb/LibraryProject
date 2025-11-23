@@ -13,15 +13,7 @@
             <ul class="menu">
                 <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 
-                <li class="has-submenu active open">
-                    <a href="#" onclick="toggleSubmenu(event)">
-                        <i class="fas fa-database"></i> Quản lý tài nguyên số 
-                        <i class="fas fa-chevron-down arrow"></i>
-                    </a>
-                    <ul class="submenu">
-                        <li><a href="admin_resources.html" style="color: white; font-weight: bold;"><i class="fas fa-file-pdf"></i> Ebook & Tài liệu</a></li>
-                    </ul>
-                </li>
+                <li class="active"><a href="admin_resources.html"><i class="fas fa-database"></i> Quản lý tài nguyên số</a></li>
 
                 <li><a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a></li>
                 <li><a href="admin_loans.html"><i class="fas fa-clipboard-list"></i> Quản lý Mượn Trả</a></li>
@@ -37,21 +29,21 @@
             </div>
 
             <div class="toolbar">
-    <div class="search-group">
-        <i class="fas fa-search"></i>
-        <input type="text" id="search-input" placeholder="Tìm kiếm tài liệu..." onkeyup="handleSearch()">
-    </div>
-    
-    <div style="display: flex; gap: 10px;">
-        <button class="btn-add-new" style="background: #faad14;" onclick="bulkImportEbooks()">
-            <i class="fas fa-bolt"></i> Auto Import
-        </button>
+                <div class="search-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Tìm kiếm tài liệu..." onkeyup="handleSearch()">
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-add-new" style="background: #faad14;" onclick="bulkImportEbooks()">
+                        <i class="fas fa-bolt"></i> Auto Import
+                    </button>
 
-        <button class="btn-add-new" onclick="openModal()">
-            <i class="fas fa-cloud-upload-alt"></i> Upload Tài Liệu
-        </button>
-    </div>
-    </div>
+                    <button class="btn-add-new" onclick="openModal()">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload Tài Liệu
+                    </button>
+                </div>
+            </div>
 
             <div class="table-container">
                 <table class="custom-table">
@@ -65,8 +57,7 @@
                             <th>Hành Động</th>
                         </tr>
                     </thead>
-                    <tbody id="resource-list">
-                        </tbody>
+                    <tbody id="resource-list"></tbody>
                 </table>
             </div>
         </main>
@@ -100,8 +91,7 @@
                     <label>Dung lượng / Thời lượng</label>
                     <input type="text" id="r-size" placeholder="Ví dụ: 5MB hoặc 15 phút">
                 </div>
-                
-                </div>
+            </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeModal()">Hủy</button>
                 <button class="btn-save" onclick="saveResource()">Lưu Lại</button>

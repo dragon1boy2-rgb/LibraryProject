@@ -42,11 +42,14 @@
         <div class="form-container sign-in-container">
             <form onsubmit="handleLogin(event)">
                 <h1>Đăng Nhập</h1>
+                
                 <div class="social-container">
-                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-                    <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social google-btn" onclick="handleGoogleBtnClick(event)">
+                        <i class="fab fa-google" style="margin-right: 8px; color: #DB4437; font-size: 18px;"></i>
+                        Đăng nhập bằng Google
+                    </a>
                 </div>
+                
                 <span>hoặc sử dụng tài khoản của bạn</span>
                 <input type="text" id="login-user" placeholder="Tên đăng nhập" required />
                 <input type="password" id="login-pass" placeholder="Mật khẩu" required />

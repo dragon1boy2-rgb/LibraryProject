@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Quản Lý Mượn Trả</title>
-    <link rel="stylesheet" href="css/admin_books.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin_books.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="wrapper">
@@ -11,14 +12,13 @@
             <div class="brand"><i class="fas fa-book-reader"></i> <span>DLib K12</span></div>
             <ul class="menu">
                 <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li class="has-submenu">
-                    <a href="#" onclick="toggleSubmenu(event)"><i class="fas fa-database"></i> Quản lý tài nguyên số <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="admin_resources.html"><i class="fas fa-file-pdf"></i> Ebook & Tài liệu</a></li>
-                    </ul>
-                </li>
+                
+                <li><a href="admin_resources.html"><i class="fas fa-database"></i> Quản lý tài nguyên số</a></li>
+                
                 <li><a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a></li>
+                
                 <li class="active"><a href="admin_loans.html"><i class="fas fa-clipboard-list"></i> Quản lý Mượn Trả</a></li>
+                
                 <li><a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a></li>
                 <li class="logout"><a href="#" onclick="DB.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
             </ul>
@@ -56,8 +56,7 @@
                             <th>Hành Động</th>
                         </tr>
                     </thead>
-                    <tbody id="loan-list">
-                        </tbody>
+                    <tbody id="loan-list"></tbody>
                 </table>
             </div>
         </main>

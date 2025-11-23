@@ -5,6 +5,7 @@
     <title>Quản Lý Sách - DLib K12</title>
     <link rel="stylesheet" href="css/admin_books.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
     <div class="wrapper">
@@ -12,17 +13,7 @@
             <div class="brand"><i class="fas fa-book-reader"></i> <span>DLib K12</span></div>
             <ul class="menu">
                 <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                
-                <li class="has-submenu">
-                    <a href="#" onclick="toggleSubmenu(event)">
-                        <i class="fas fa-database"></i> Quản lý tài nguyên số 
-                        <i class="fas fa-chevron-down arrow"></i>
-                    </a>
-                    <ul class="submenu">
-                        <li><a href="admin_resources.html"><i class="fas fa-file-pdf"></i> Ebook & Tài liệu</a></li>
-                    </ul>
-                </li>
-
+                <li><a href="admin_resources.html"><i class="fas fa-database"></i> Quản lý tài nguyên số</a></li>
                 <li class="active"><a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a></li>
                 <li><a href="admin_loans.html"><i class="fas fa-clipboard-list"></i> Quản lý Mượn Trả</a></li>
                 <li><a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a></li>
@@ -41,12 +32,10 @@
                     <i class="fas fa-search"></i>
                     <input type="text" id="search-input" placeholder="Tìm tên sách, tác giả..." onkeyup="handleSearch()">
                 </div>
-                
                 <div style="display: flex; gap: 10px;">
                     <button id="btn-bulk-import" class="btn-add-new" style="background: #faad14;" onclick="bulkImportBooks()">
                         <i class="fas fa-bolt"></i> Auto Import
                     </button>
-
                     <button class="btn-add-new" onclick="openModal()">
                         <i class="fas fa-plus"></i> Thêm Thủ Công
                     </button>
@@ -66,9 +55,14 @@
                             <th>Hành Động</th>
                         </tr>
                     </thead>
-                    <tbody id="book-list">
-                        </tbody>
+                    <tbody id="book-list"></tbody>
                 </table>
+            </div>
+
+            <div class="pagination-container">
+                <button class="btn-page" onclick="changePage(-1)" id="btn-prev"><i class="fas fa-chevron-left"></i></button>
+                <div id="pagination-numbers" style="display: flex; gap: 5px;"></div>
+                <button class="btn-page" onclick="changePage(1)" id="btn-next"><i class="fas fa-chevron-right"></i></button>
             </div>
         </main>
     </div>
@@ -79,35 +73,74 @@
                 <h3 id="modal-title">Thêm Sách Mới</h3>
                 <span class="close-modal" onclick="closeModal()">&times;</span>
             </div>
+            
             <div class="modal-body">
-                <input type="hidden" id="book-id">
-                
-                <div class="form-group">
-                    <label>Tên sách</label>
-                    <input type="text" id="book-name" placeholder="Nhập tên sách...">
-                </div>
-                <div class="form-group">
-                    <label>Tác giả</label>
-                    <input type="text" id="book-author" placeholder="Nhập tên tác giả...">
-                </div>
-                
-                <div class="form-group">
-                    <label>Nhà xuất bản</label>
-                    <input type="text" id="book-publisher" placeholder="Nhập tên NXB...">
+                <div class="image-upload-container">
+                    <label style="font-weight: 600; color: #444;">Ảnh bìa sách</label>
+                    
+                    <div class="upload-placeholder" id="upload-zone">
+                        <div id="upload-instruction" style="text-align:center;">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <br><span>Nhấn để chọn ảnh</span>
+                        </div>
+
+                        <div id="cropper-container" style="display: none; width: 100%; height: 100%;">
+                            <img id="cropper-image" src="">
+                        </div>
+
+                        <div id="final-preview-container" style="display: none; width: 100%; height: 100%;">
+                            <img id="image-preview" src="" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+
+                    <input type="file" id="book-image-file" accept="image/*">
+                    <input type="hidden" id="book-image-base64">
+
+                    <div id="cropper-actions" style="display: none; justify-content: space-between;">
+                        <button class="btn-cancel" onclick="event.stopPropagation(); cancelCrop()" style="font-size: 13px; padding: 6px 15px;">Hủy bỏ</button>
+                        <button class="btn-save" onclick="event.stopPropagation(); performCrop()" style="font-size: 13px; padding: 6px 15px; background: #52c41a;">
+                            <i class="fas fa-crop"></i> Cắt & Lưu
+                        </button>
+                    </div>
+
+                    <button id="btn-reselect" onclick="document.getElementById('book-image-file').click()" style="display:none; width:100%; padding: 8px; border:1px dashed #1890ff; background: #f0f5ff; color:#1890ff; cursor:pointer; border-radius:4px;">
+                        <i class="fas fa-sync"></i> Chọn ảnh khác
+                    </button>
                 </div>
 
-                <div class="form-group">
-                    <label>Số lượng trong kho</label>
-                    <input type="number" id="book-stock" placeholder="0">
+                <div class="info-container">
+                    <input type="hidden" id="book-id">
+                    
+                    <div class="form-group">
+                        <label>Tên sách <span style="color:red">*</span></label>
+                        <input type="text" id="book-name" placeholder="Nhập tên sách đầy đủ...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Tác giả <span style="color:red">*</span></label>
+                        <input type="text" id="book-author" placeholder="Tên tác giả...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nhà xuất bản</label>
+                        <input type="text" id="book-publisher" placeholder="Ví dụ: NXB Kim Đồng">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Số lượng kho</label>
+                        <input type="number" id="book-stock" placeholder="10">
+                    </div>
                 </div>
             </div>
+
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="closeModal()">Hủy</button>
-                <button class="btn-save" onclick="saveBook()">Lưu Lại</button>
+                <button class="btn-cancel" onclick="closeModal()">Đóng</button>
+                <button class="btn-save" onclick="saveBook()">Lưu Sách</button>
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/data.js"></script>
     <script src="js/admin_books.js"></script>
