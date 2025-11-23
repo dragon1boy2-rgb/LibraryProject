@@ -37,14 +37,21 @@
             </div>
 
             <div class="toolbar">
-                <div class="search-group">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Tìm kiếm tài liệu..." onkeyup="handleSearch()">
-                </div>
-                <button class="btn-add-new" onclick="openModal()">
-                    <i class="fas fa-cloud-upload-alt"></i> Upload Tài Liệu
-                </button>
-            </div>
+    <div class="search-group">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search-input" placeholder="Tìm kiếm tài liệu..." onkeyup="handleSearch()">
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+        <button class="btn-add-new" style="background: #faad14;" onclick="bulkImportEbooks()">
+            <i class="fas fa-bolt"></i> Auto Import
+        </button>
+
+        <button class="btn-add-new" onclick="openModal()">
+            <i class="fas fa-cloud-upload-alt"></i> Upload Tài Liệu
+        </button>
+    </div>
+    </div>
 
             <div class="table-container">
                 <table class="custom-table">

@@ -138,3 +138,62 @@ function handleSearch() {
 
 // Chạy lần đầu
 document.addEventListener('DOMContentLoaded', () => render());
+
+// File: LibraryProject/js/admin_resources.js
+
+// --- TÍNH NĂNG AUTO IMPORT EBOOK ---
+async function bulkImportEbooks() {
+    // 1. Hỏi người dùng chủ đề
+    const keyword = prompt("Nhập chủ đề Ebook muốn tìm kiếm (VD: Python, Kinh tế, Lịch sử):", "Lịch sử Việt Nam");
+    if (!keyword) return;
+
+    // Hiệu ứng loading cho nút bấm (nếu tìm thấy nút)
+    const btn = document.querySelector('button[onclick="bulkImportEbooks()"]');
+    const oldText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+        btn.disabled = true;
+    }
+
+    try {
+        // 2. Gọi Google Books API (Lọc sách miễn phí & Tiếng Việt)
+        const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(keyword)}&filter=free-ebooks&maxResults=15&langRestrict=vi`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.items || data.items.length === 0) {
+            alert("Không tìm thấy Ebook miễn phí nào cho chủ đề này!");
+            return;
+        }
+
+        let count = 0;
+        // 3. Duyệt qua danh sách và thêm vào DB
+        for (const item of data.items) {
+            const info = item.volumeInfo;
+            
+            // Tạo đối tượng tài liệu theo cấu trúc DB hiện tại
+            const resource = {
+                name: info.title,
+                type: 'Ebook', // Tự động set loại là Ebook
+                size: info.pageCount ? `${info.pageCount} trang` : 'Online', // Lấy số trang làm dung lượng
+                // Lưu ý: Hiện tại DB chưa có cột 'link', nên ta chưa lưu link đọc thử được
+            };
+
+            // Gọi hàm thêm từ data.js (bạn có thể thêm check trùng lặp nếu cần)
+            await DB.addResource(resource);
+            count++;
+        }
+
+        render(); // Tải lại bảng
+
+    } catch (e) {
+        console.error(e);
+        alert("Lỗi hệ thống hoặc lỗi kết nối API!");
+    } finally {
+        // Trả lại trạng thái nút bấm
+        if (btn) {
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+    }
+}
