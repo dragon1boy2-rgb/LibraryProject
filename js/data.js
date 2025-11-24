@@ -95,6 +95,7 @@ const DB = {
                             password: 'google_auth_user_' + randomId,
                             fullname: fullName,
                             email: email,
+                            avatar_url: avatar, // [CẬP NHẬT] Đã thêm dòng này để lưu ảnh
                             role: 'student', 
                             student_id: 'G-' + randomId 
                         };
@@ -104,7 +105,15 @@ const DB = {
                     }
 
                     if (currentUser) {
+                        // [CẬP NHẬT] Logic tự sửa lỗi nếu user cũ chưa có avatar
+                        if (!currentUser.avatar_url && avatar) {
+                            currentUser.avatar_url = avatar;
+                            // Cập nhật ngầm vào DB để lần sau có ảnh
+                            _supabase.from('users').update({ avatar_url: avatar }).eq('id', currentUser.id).then();
+                        }
+
                         if(avatar) localStorage.setItem('user_avatar_' + currentUser.id, avatar);
+                        
                         sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
                         _supabase.from('access_logs').insert([{ user_id: currentUser.id, role: currentUser.role }]).then();
                         window.history.replaceState({}, document.title, window.location.pathname);
