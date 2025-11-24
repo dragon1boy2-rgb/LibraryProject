@@ -16,7 +16,6 @@ const BOOK_PRICE = 50000;
 const CARD_PRICES = { '1m': 50000, '6m': 250000, '1y': 450000 };
 let cart = JSON.parse(localStorage.getItem('dlib_cart_' + currentUser.id)) || [];
 
-// [CẬP NHẬT] BIẾN PHÂN TRANG = 21 (Khớp lưới 3 cột)
 const ITEMS_PER_PAGE = 21;
 
 let allBooks = []; 
@@ -58,7 +57,7 @@ async function loadStats() {
     document.getElementById('stat-fine').innerText = (stats.fine || 0).toLocaleString() + ' đ';
 }
 
-// --- 3. KHO SÁCH (CÓ PHÂN TRANG + LỌC) ---
+// --- 3. KHO SÁCH ---
 function filterLib(category, element) {
     document.querySelectorAll('#lib-filters .tag').forEach(t => t.classList.remove('active'));
     element.classList.add('active');
@@ -133,7 +132,7 @@ async function renderLibrary() {
 function handleLibSearch() { currentLibPage = 1; renderLibrary(); }
 function changeLibPage(dir) { currentLibPage += dir; renderLibrary(); }
 
-// --- 3.5 KHO TÀI NGUYÊN SỐ (CẬP NHẬT: GỢI Ý THEO TỪNG TAB) ---
+// --- 3.5 KHO TÀI NGUYÊN SỐ ---
 async function renderResources() {
     const grid = document.getElementById('resource-grid');
     let keyword = document.getElementById('search-resource').value.toLowerCase().trim();
@@ -150,26 +149,21 @@ async function renderResources() {
         return matchKey && matchType;
     });
 
-    // [LOGIC MỚI] Gợi ý tài liệu Online theo từng Tab
     let onlineResources = [];
     
-    // 1. Nếu ở Tab 'Tất cả' hoặc 'Ebook' -> Tìm Ebook
     if (activeFilter === 'Tất cả' || activeFilter === 'Ebook') {
         const ebooks = await DB.searchOnlineEbooks(searchKeyForOnline);
         onlineResources = [...onlineResources, ...ebooks];
     }
-    // 2. Nếu ở Tab 'PDF' -> Tìm PDF
     if (activeFilter === 'PDF') {
         const pdfs = await DB.searchOnlinePDFs(searchKeyForOnline);
         onlineResources = [...onlineResources, ...pdfs];
     }
-    // 3. Nếu ở Tab 'Video' -> Lấy Video gợi ý
     if (activeFilter === 'Video') {
         const videos = await DB.getSuggestedVideos();
         onlineResources = [...onlineResources, ...videos];
     }
 
-    // Gộp Local + Online
     currentResFiltered = [...localFiltered, ...onlineResources];
 
     const totalPages = Math.ceil(currentResFiltered.length / ITEMS_PER_PAGE);
@@ -188,13 +182,11 @@ async function renderResources() {
     }
 
     itemsToShow.forEach(r => {
-        // CSS: Dùng icon đồng bộ, không dùng màu vàng nổi bật
         let iconClass = 'fa-file-alt'; 
         let iconColor = '#777'; 
         let badgeClass = 'tag'; 
         
         if (r.is_online) { 
-            // Nếu là Online
             if (r.type.includes('Video')) {
                 iconClass = 'fa-play-circle'; 
                 iconColor = '#1890ff'; 
@@ -209,7 +201,6 @@ async function renderResources() {
                 badgeClass = 'tag tag-purple'; 
             }
         } else {
-            // Nếu là Local
             if(r.type === 'PDF') { iconClass = 'fa-file-pdf'; iconColor = '#ff4d4f'; badgeClass = 'tag tag-red'; }
             else if(r.type === 'Video') { iconClass = 'fa-play-circle'; iconColor = '#1890ff'; badgeClass = 'tag tag-blue'; }
             else if(r.type === 'Ebook') { iconClass = 'fa-book-open'; iconColor = '#52c41a'; badgeClass = 'tag tag-purple'; }
@@ -221,9 +212,10 @@ async function renderResources() {
         }
 
         const viewBtnWidth = r.download_url ? '48%' : '100%';
-        const viewUrl = r.resource_url || r.preview_link || '#';
         
-        // Ảnh hiển thị: Ưu tiên ảnh thật -> Nếu không có thì dùng Icon
+        // [QUAN TRỌNG] Ưu tiên lấy link từ DB (resource_url) hoặc link Google (preview_link)
+        const viewUrl = r.resource_url || r.preview_link || '';
+        
         let displayImage = '';
         if (r.image_url) {
             displayImage = `<img src="${r.image_url}" style="height:100%; width:auto; max-width:100%; object-fit:contain;">`;
@@ -231,6 +223,7 @@ async function renderResources() {
             displayImage = `<i class="fas ${iconClass}" style="font-size: 50px; color: ${iconColor};"></i>`;
         }
 
+        // [SỬA LỖI] Sử dụng data-link để tránh lỗi ký tự trong onclick
         grid.innerHTML += `
             <div class="book-item" style="display:flex; flex-direction:column; height: 100%;">
                 
@@ -248,7 +241,11 @@ async function renderResources() {
                     </div>
 
                     <div style="display:flex; justify-content: space-between;">
-                        <button style="width:${viewBtnWidth}; background:${iconColor}; color:white; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:12px;" onclick="openResource('${viewUrl}')"><i class="fas fa-eye"></i> Xem</button>
+                        <button style="width:${viewBtnWidth}; background:${iconColor}; color:white; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:12px;" 
+                            data-link="${viewUrl}"
+                            onclick="openResource(this.getAttribute('data-link'))">
+                            <i class="fas fa-eye"></i> Xem
+                        </button>
                         ${downloadBtnHtml}
                     </div>
                 </div>
@@ -266,11 +263,13 @@ function filterRes(type, el) {
     renderResources();
 }
 function changeResPage(dir) { currentResPage += dir; renderResources(); }
+
+// [CẬP NHẬT] Hàm mở link tài nguyên an toàn
 function openResource(url) {
     if (url && url !== 'undefined' && url !== 'null' && url.trim() !== '' && url !== '#') {
         window.open(url, '_blank');
     } else {
-        alert("Tài liệu này chưa có link xem trực tuyến!");
+        alert("❌ Tài liệu này chưa được cập nhật đường dẫn xem online!\nVui lòng liên hệ Admin để bổ sung.");
     }
 }
 
@@ -313,7 +312,9 @@ function openDetail(id) {
     const btnRead = document.getElementById('btn-read-trial');
     const stockEl = document.getElementById('d-stock');
 
+    // [LOGIC XEM TRƯỚC] Ưu tiên lấy link từ DB nếu có
     const linkDoc = book.preview_link || (book.is_google ? book.preview_link : null);
+    
     if (linkDoc && linkDoc.trim() !== "") {
         btnRead.style.display = 'inline-block';
         btnRead.onclick = () => window.open(linkDoc, '_blank');
@@ -354,7 +355,7 @@ async function handleAction(type) {
     }
 }
 
-// --- 5. ĐĂNG KÝ THẺ & GIỎ HÀNG (Giữ nguyên) ---
+// --- 5. ĐĂNG KÝ THẺ & GIỎ HÀNG ---
 function renderCardRegister() {
     const myCard = JSON.parse(localStorage.getItem('dlib_card_' + currentUser.id));
     const formContainer = document.getElementById('register-form-container');

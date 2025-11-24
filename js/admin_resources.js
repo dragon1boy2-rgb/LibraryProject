@@ -16,7 +16,7 @@ const idEl = document.getElementById('r-id');
 const nameEl = document.getElementById('r-name');
 const typeEl = document.getElementById('r-type');
 const sizeEl = document.getElementById('r-size');
-const linkEl = document.getElementById('r-link');
+const linkEl = document.getElementById('r-link'); // Đã khớp với HTML mới
 
 // 2. RENDER BẢNG
 async function render(data = null) {
@@ -42,10 +42,13 @@ async function render(data = null) {
         else if(r.type === 'Ebook') typeBadge = '<span class="status-badge" style="background:#f6ffed; color:#52c41a; border:1px solid #b7eb8f">Ebook</span>';
         else typeBadge = `<span class="status-badge" style="background:#fff7e6; color:#faad14; border:1px solid #ffe58f">${r.type}</span>`;
 
+        // Hiển thị link nếu có (để Admin dễ check)
+        const linkDisplay = r.resource_url ? `<a href="${r.resource_url}" target="_blank" style="color:#1890ff; font-size:12px;"><i class="fas fa-external-link-alt"></i> Link</a>` : '';
+
         tbody.innerHTML += `
             <tr>
                 <td>#${r.id}</td>
-                <td><strong>${r.name}</strong></td>
+                <td><strong>${r.name}</strong> ${linkDisplay}</td>
                 <td>${typeBadge}</td>
                 <td>${r.size || '-'}</td>
                 <td>${new Date(r.created_at).toLocaleDateString() || '-'}</td>
@@ -64,7 +67,9 @@ function openModal() {
     nameEl.value = '';
     typeEl.value = 'PDF';
     sizeEl.value = '';
-    linkEl.value = '';
+    
+    // Reset link
+    if(linkEl) linkEl.value = '';
     
     titleEl.innerText = "Thêm Tài Liệu Mới";
     modal.classList.add('active');
@@ -78,7 +83,9 @@ function openModalEdit(id) {
     nameEl.value = res.name;
     typeEl.value = res.type;
     sizeEl.value = res.size;
-    linkEl.value = res.resource_url || '';
+    
+    // Đổ dữ liệu link cũ vào input
+    if(linkEl) linkEl.value = res.resource_url || '';
 
     titleEl.innerText = "Cập Nhật Tài Liệu";
     modal.classList.add('active');
@@ -92,7 +99,9 @@ async function saveResource() {
     const name = nameEl.value;
     const type = typeEl.value;
     const size = sizeEl.value;
-    const resource_url = linkEl.value.trim();
+    
+    // Lấy giá trị link
+    const resource_url = linkEl ? linkEl.value.trim() : '';
 
     if (!name) { alert("Vui lòng nhập tên tài liệu!"); return; }
 
@@ -156,7 +165,7 @@ async function bulkImportEbooks() {
                 name: info.title,
                 type: 'Ebook',
                 size: info.pageCount ? `${info.pageCount} trang` : 'Online',
-                resource_url: info.previewLink 
+                resource_url: info.previewLink // Link xem thử từ Google
             };
 
             await DB.addResource(resource);
