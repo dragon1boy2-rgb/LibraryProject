@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="css/user_home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
@@ -25,6 +24,7 @@
                 <ul>
                     <li class="active" onclick="switchTab('home', this)"><a href="#"><i class="fas fa-home"></i> Trang Chủ</a></li>
                     <li onclick="switchTab('library', this)"><a href="#"><i class="fas fa-book"></i> Tra Cứu Sách</a></li>
+                    <li onclick="switchTab('resources', this)"><a href="#"><i class="fas fa-cloud-download-alt"></i> Tài Nguyên Số</a></li>
                     <li onclick="switchTab('card-register', this)"><a href="#"><i class="fas fa-id-card"></i> Thẻ Thư Viện</a></li>
                     <li onclick="switchTab('loans', this)"><a href="#"><i class="fas fa-history"></i> Lịch Sử Mượn</a></li>
                     <li onclick="switchTab('cart', this)" style="position: relative;">
@@ -118,15 +118,55 @@
                 <div class="toolbar-container">
                     <div class="search-bar-modern">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="search-book" placeholder="Nhập tên sách, tác giả, chủ đề..." onkeyup="renderLibrary()">
+                        <input type="text" id="search-book" placeholder="Nhập tên sách, tác giả, chủ đề..." onkeyup="handleLibSearch()">
                     </div>
-                    <div class="filter-tags">
-                        <span class="tag active">Tất cả</span>
-                        <span class="tag">Sách mới</span>
-                        <span class="tag">Xem nhiều</span>
+                    
+                    <div class="filter-tags" id="lib-filters">
+                        <span class="tag active" onclick="filterLib('all', this)">Tất cả</span>
+                        <span class="tag" onclick="filterLib('Sách mới', this)">Sách mới</span>
+                        <span class="tag" onclick="filterLib('Xem nhiều', this)">Xem nhiều</span>
+                        <span class="tag" onclick="filterLib('Công nghệ', this)">Công nghệ</span>
+                        <span class="tag" onclick="filterLib('Kinh tế', this)">Kinh tế</span>
+                        <span class="tag" onclick="filterLib('Văn học', this)">Văn học</span>
+                        <span class="tag" onclick="filterLib('Ngoại ngữ', this)">Ngoại ngữ</span>
+                        <span class="tag" onclick="filterLib('Kỹ năng', this)">Kỹ năng sống</span>
+                        <span class="tag" onclick="filterLib('Truyện tranh', this)">Truyện tranh</span>
                     </div>
                 </div>
+                
                 <div id="library-grid" class="book-grid"></div>
+
+                <div class="pagination-container" id="lib-pagination" style="display:none;">
+                    <button class="btn-page" onclick="changeLibPage(-1)" id="btn-lib-prev"><i class="fas fa-chevron-left"></i></button>
+                    <div id="lib-page-numbers" style="display: flex; gap: 5px;"></div>
+                    <button class="btn-page" onclick="changeLibPage(1)" id="btn-lib-next"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div id="tab-resources" class="tab-section">
+                <div class="section-title">
+                    <h3><i class="fas fa-cloud-download-alt"></i> Kho Tài Nguyên Số</h3>
+                </div>
+                <div class="toolbar-container">
+                    <div class="search-bar-modern">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-resource" placeholder="Tìm kiếm tài liệu, ebook, video..." onkeyup="handleResSearch()">
+                    </div>
+                    <div class="filter-tags" id="res-filters">
+                        <span class="tag active" onclick="filterRes('all', this)">Tất cả</span>
+                        <span class="tag" onclick="filterRes('PDF', this)">PDF</span>
+                        <span class="tag" onclick="filterRes('Ebook', this)">Ebook</span>
+                        <span class="tag" onclick="filterRes('Video', this)">Video</span>
+                    </div>
+                </div>
+                
+                <div id="resource-grid" class="book-grid"></div>
+
+                <div class="pagination-container" id="res-pagination" style="display:none;">
+                    <button class="btn-page" onclick="changeResPage(-1)" id="btn-res-prev"><i class="fas fa-chevron-left"></i></button>
+                    <div id="res-page-numbers" style="display: flex; gap: 5px;"></div>
+                    <button class="btn-page" onclick="changeResPage(1)" id="btn-res-next"><i class="fas fa-chevron-right"></i></button>
+                </div>
             </div>
 
             <div id="tab-loans" class="tab-section">
@@ -312,10 +352,17 @@
                     <p class="meta-info"><i class="fas fa-user-edit"></i> <span id="d-author">Tác giả</span> &nbsp;|&nbsp; <i class="fas fa-building"></i> <span id="d-pub">NXB</span></p>
                     <div class="stock-status" id="d-stock">Còn hàng</div>
                     <div class="desc-box"><h4>Giới thiệu nội dung:</h4><p id="d-desc">...</p></div>
-                    <div class="action-buttons">
+                    
+                    <div class="action-buttons" style="display: flex; gap: 10px;">
                         <button id="btn-action" class="btn-primary-lg">Mượn Ngay</button>
+                        
+                        <button id="btn-read-trial" class="btn-primary-lg" style="background-color: #722ed1; display: none;">
+                            <i class="fas fa-book-open"></i> Đọc thử
+                        </button>
+                        
                         <button class="btn-secondary-lg" onclick="closeModal()">Đóng</button>
                     </div>
+
                 </div>
             </div>
         </div>

@@ -16,6 +16,7 @@ const idEl = document.getElementById('r-id');
 const nameEl = document.getElementById('r-name');
 const typeEl = document.getElementById('r-type');
 const sizeEl = document.getElementById('r-size');
+const linkEl = document.getElementById('r-link');
 
 // 2. RENDER BẢNG
 async function render(data = null) {
@@ -35,7 +36,6 @@ async function render(data = null) {
     }
 
     data.forEach(r => {
-        // Badge màu sắc theo loại file
         let typeBadge = '';
         if(r.type === 'PDF') typeBadge = '<span class="status-badge" style="background:#fff1f0; color:#f5222d; border:1px solid #ffa39e">PDF</span>';
         else if(r.type === 'Video') typeBadge = '<span class="status-badge" style="background:#e6f7ff; color:#1890ff; border:1px solid #91d5ff">Video</span>';
@@ -50,12 +50,8 @@ async function render(data = null) {
                 <td>${r.size || '-'}</td>
                 <td>${new Date(r.created_at).toLocaleDateString() || '-'}</td>
                 <td>
-                    <button class="action-btn btn-edit" onclick="openModalEdit(${r.id})">
-                        <i class="fas fa-pen"></i>
-                    </button>
-                    <button class="action-btn btn-delete" onclick="handleDelete(${r.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <button class="action-btn btn-edit" onclick="openModalEdit(${r.id})"><i class="fas fa-pen"></i></button>
+                    <button class="action-btn btn-delete" onclick="handleDelete(${r.id})"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
         `;
@@ -68,6 +64,7 @@ function openModal() {
     nameEl.value = '';
     typeEl.value = 'PDF';
     sizeEl.value = '';
+    linkEl.value = '';
     
     titleEl.innerText = "Thêm Tài Liệu Mới";
     modal.classList.add('active');
@@ -81,14 +78,13 @@ function openModalEdit(id) {
     nameEl.value = res.name;
     typeEl.value = res.type;
     sizeEl.value = res.size;
+    linkEl.value = res.resource_url || '';
 
     titleEl.innerText = "Cập Nhật Tài Liệu";
     modal.classList.add('active');
 }
 
-function closeModal() {
-    modal.classList.remove('active');
-}
+function closeModal() { modal.classList.remove('active'); }
 
 // 4. LƯU DỮ LIỆU
 async function saveResource() {
@@ -96,21 +92,13 @@ async function saveResource() {
     const name = nameEl.value;
     const type = typeEl.value;
     const size = sizeEl.value;
+    const resource_url = linkEl.value.trim();
 
     if (!name) { alert("Vui lòng nhập tên tài liệu!"); return; }
 
-    const item = { name, type, size };
+    const item = { name, type, size, resource_url };
 
-    // Ở đây tôi dùng tạm logic cũ: Nếu có ID thì xóa đi thêm mới (vì chưa viết hàm updateResource)
-    // Hoặc tốt nhất bạn nên thêm hàm updateResource vào data.js
-    // Hiện tại data.js chưa có updateResource, nên ta sẽ dùng mẹo: 
-    // Nếu sửa -> Alert thông báo (hoặc bạn tự thêm hàm updateResource vào data.js tương tự updateBook)
-    
     if (id) {
-        // Nếu bạn đã thêm hàm updateResource vào data.js thì dùng dòng này:
-        // await DB.updateResource(id, item);
-        
-        // Còn nếu chưa, ta tạm thời xóa cũ thêm mới (cách chữa cháy):
         await DB.deleteResource(id);
         await DB.addResource(item);
     } else {
@@ -136,18 +124,13 @@ function handleSearch() {
     render(filtered);
 }
 
-// Chạy lần đầu
 document.addEventListener('DOMContentLoaded', () => render());
 
-// File: LibraryProject/js/admin_resources.js
-
-// --- TÍNH NĂNG AUTO IMPORT EBOOK ---
+// --- AUTO IMPORT EBOOK ---
 async function bulkImportEbooks() {
-    // 1. Hỏi người dùng chủ đề
     const keyword = prompt("Nhập chủ đề Ebook muốn tìm kiếm (VD: Python, Kinh tế, Lịch sử):", "Lịch sử Việt Nam");
     if (!keyword) return;
 
-    // Hiệu ứng loading cho nút bấm (nếu tìm thấy nút)
     const btn = document.querySelector('button[onclick="bulkImportEbooks()"]');
     const oldText = btn ? btn.innerHTML : '';
     if (btn) {
@@ -156,7 +139,6 @@ async function bulkImportEbooks() {
     }
 
     try {
-        // 2. Gọi Google Books API (Lọc sách miễn phí & Tiếng Việt)
         const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(keyword)}&filter=free-ebooks&maxResults=15&langRestrict=vi`;
         const res = await fetch(url);
         const data = await res.json();
@@ -167,30 +149,26 @@ async function bulkImportEbooks() {
         }
 
         let count = 0;
-        // 3. Duyệt qua danh sách và thêm vào DB
         for (const item of data.items) {
             const info = item.volumeInfo;
             
-            // Tạo đối tượng tài liệu theo cấu trúc DB hiện tại
             const resource = {
                 name: info.title,
-                type: 'Ebook', // Tự động set loại là Ebook
-                size: info.pageCount ? `${info.pageCount} trang` : 'Online', // Lấy số trang làm dung lượng
-                // Lưu ý: Hiện tại DB chưa có cột 'link', nên ta chưa lưu link đọc thử được
+                type: 'Ebook',
+                size: info.pageCount ? `${info.pageCount} trang` : 'Online',
+                resource_url: info.previewLink 
             };
 
-            // Gọi hàm thêm từ data.js (bạn có thể thêm check trùng lặp nếu cần)
             await DB.addResource(resource);
             count++;
         }
 
-        render(); // Tải lại bảng
+        render();
 
     } catch (e) {
         console.error(e);
         alert("Lỗi hệ thống hoặc lỗi kết nối API!");
     } finally {
-        // Trả lại trạng thái nút bấm
         if (btn) {
             btn.innerHTML = oldText;
             btn.disabled = false;

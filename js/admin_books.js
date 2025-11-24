@@ -1,4 +1,4 @@
-// js/admin_books.js
+// js/admin_books.js [CẬP NHẬT]
 
 // 1. BẢO VỆ TRANG
 const currentUser = DB.getCurrentUser();
@@ -9,9 +9,10 @@ if (!currentUser || currentUser.role !== 'admin') {
 let allBooks = [], currentData = [], currentPage = 1; const rowsPerPage = 50; let cropper = null;
 
 const modal = document.getElementById('bookModal');
-// Mapping các ID (Đã thêm upload-zone)
-const [titleEl, idEl, nameEl, authEl, pubEl, stockEl, imgInputEl, imgBase64El, imgPreviewEl, finalPreviewContainer, cropperContainer, cropperImageEl, cropperActionsEl, uploadInstructionEl, btnReselectEl, uploadZoneEl] = 
+// Mapping các ID (Đã thêm book-preview)
+const [titleEl, idEl, nameEl, authEl, pubEl, stockEl, previewEl, imgInputEl, imgBase64El, imgPreviewEl, finalPreviewContainer, cropperContainer, cropperImageEl, cropperActionsEl, uploadInstructionEl, btnReselectEl, uploadZoneEl] = 
     ['modal-title','book-id','book-name','book-author','book-publisher','book-stock', 
+     'book-preview', // <-- ID MỚI
      'book-image-file', 'book-image-base64', 'image-preview', 
      'final-preview-container', 'cropper-container', 'cropper-image', 'cropper-actions',
      'upload-instruction', 'btn-reselect', 'upload-zone']
@@ -47,12 +48,9 @@ function updatePaginationUI(totalPages) {
 function goToPage(page) { currentPage = page; render(currentData); }
 function changePage(direction) { currentPage += direction; render(currentData); }
 
-// --- XỬ LÝ LOGIC ẢNH (SỬA LỖI CLICK NHẦM) ---
-
-// [MỚI] Xử lý click vào vùng Upload Zone
+// --- XỬ LÝ LOGIC ẢNH ---
 if(uploadZoneEl) {
     uploadZoneEl.addEventListener('click', function() {
-        // Chỉ mở chọn file khi KHÔNG có cropper và KHÔNG có ảnh kết quả
         if (!cropper && !imgBase64El.value) {
             imgInputEl.click();
         }
@@ -63,7 +61,6 @@ function resetImageUI() {
     imgInputEl.value = '';
     imgBase64El.value = '';
     
-    // Reset các vùng hiển thị
     uploadInstructionEl.style.display = 'block'; 
     cropperContainer.style.display = 'none';
     cropperActionsEl.style.display = 'none';
@@ -85,7 +82,6 @@ function showFinalImage(src) {
     if (cropper) { cropper.destroy(); cropper = null; }
 }
 
-// 1. Khi chọn file
 imgInputEl.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -107,7 +103,6 @@ imgInputEl.addEventListener('change', function(e) {
     }
 });
 
-// 2. Cắt ảnh
 function performCrop() {
     if (!cropper) return;
     const canvas = cropper.getCroppedCanvas({ width: 300, height: 450 });
@@ -118,13 +113,10 @@ function performCrop() {
     }
 }
 
-// 3. Hủy crop
 function cancelCrop() {
-    // Nếu đã có ảnh cũ (khi sửa) thì hiện lại ảnh đó
     if (imgBase64El.value && !cropper) {
         showFinalImage(imgBase64El.value);
     } else {
-        // Nếu đang cắt dở hoặc chưa có ảnh thì reset
         resetImageUI();
     }
 }
@@ -132,6 +124,7 @@ function cancelCrop() {
 // --- MODAL ---
 function openModal() { 
     idEl.value=''; nameEl.value=''; authEl.value=''; pubEl.value=''; stockEl.value=''; 
+    previewEl.value = ''; // [MỚI] Reset ô link đọc thử
     resetImageUI();
     titleEl.innerText="Thêm Sách"; modal.classList.add('active'); 
 }
@@ -141,6 +134,8 @@ function openModalEdit(id) {
     if(!b) return;
     idEl.value=b.id; nameEl.value=b.name; authEl.value=b.author; pubEl.value=b.publisher||''; stockEl.value=b.stock; 
     
+    previewEl.value = b.preview_link || ''; // [MỚI] Load link cũ lên nếu có
+
     resetImageUI();
     if(b.image_url) {
         imgBase64El.value = b.image_url;
@@ -150,12 +145,21 @@ function openModalEdit(id) {
     titleEl.innerText="Sửa Sách"; modal.classList.add('active');
 }
 
-// ... (Các hàm Logic khác giữ nguyên) ...
 function closeModal() { modal.classList.remove('active'); }
 function handleSearch() { const k = document.getElementById('search-input').value.toLowerCase(); render(allBooks.filter(b => b.name.toLowerCase().includes(k) || b.author.toLowerCase().includes(k))); }
 async function bulkImportBooks() { const topics = ["Tiểu thuyết", "Kinh tế", "Công nghệ"]; if (!confirm(`Auto import demo?`)) return; const btn = document.getElementById('btn-bulk-import'); if(btn) btn.disabled=true; try { let total=0; for (const t of topics) { const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${t}&maxResults=5`); const d = await res.json(); if(d.items){ const b = d.items.map(i=>({name:i.volumeInfo.title, author:i.volumeInfo.authors?.join(',')||'Unknown', stock:10, image_url:i.volumeInfo.imageLinks?.thumbnail||''})); await DB.supabase.from('books').insert(b); total+=b.length; } } alert(`Đã thêm ${total} sách`); allBooks = await DB.getBooks(); render(); } catch(e){console.error(e);} finally{if(btn) btn.disabled=false;} }
+
 async function saveBook() {
-    const obj = { name: nameEl.value, author: authEl.value, publisher: pubEl.value, stock: parseInt(stockEl.value), image_url: imgBase64El.value };
+    // [MỚI] Thêm preview_link vào object
+    const obj = { 
+        name: nameEl.value, 
+        author: authEl.value, 
+        publisher: pubEl.value, 
+        stock: parseInt(stockEl.value), 
+        image_url: imgBase64El.value,
+        preview_link: previewEl.value.trim() 
+    };
+
     if(!obj.name || !obj.author) return alert("Thiếu thông tin!");
     const btn = document.querySelector('.btn-save'); btn.innerText="Lưu..."; btn.disabled=true;
     try {
@@ -163,5 +167,6 @@ async function saveBook() {
         closeModal(); allBooks = await DB.getBooks(); render();
     } finally { btn.innerText="Lưu Sách"; btn.disabled=false; }
 }
+
 async function handleDelete(id) { if(confirm("Xóa?")) { await DB.deleteBook(id); allBooks = await DB.getBooks(); render(); } }
 document.addEventListener('DOMContentLoaded', () => render());
