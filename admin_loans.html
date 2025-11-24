@@ -2,9 +2,17 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản Lý Mượn Trả</title>
+    <title>Quản Lý Mượn Trả Thông Minh</title>
     <link rel="stylesheet" href="css/admin_books.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .date-filter-group {
+            display: flex; align-items: center; gap: 5px;
+            background: #fff; padding: 5px 10px; border-radius: 20px; border: 1px solid #ddd;
+        }
+        .date-filter-group input { border: none; outline: none; font-size: 13px; color: #555; }
+        .date-filter-group span { font-size: 12px; color: #888; }
+    </style>
 </head>
 <body>
     <div class="wrapper">
@@ -12,13 +20,9 @@
             <div class="brand"><i class="fas fa-book-reader"></i> <span>DLib K12</span></div>
             <ul class="menu">
                 <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                
                 <li><a href="admin_resources.html"><i class="fas fa-database"></i> Quản lý tài nguyên số</a></li>
-                
                 <li><a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a></li>
-                
                 <li class="active"><a href="admin_loans.html"><i class="fas fa-clipboard-list"></i> Quản lý Mượn Trả</a></li>
-                
                 <li><a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a></li>
                 <li class="logout"><a href="#" onclick="DB.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
             </ul>
@@ -30,38 +34,51 @@
                 <div class="user-profile">Admin <img src="https://via.placeholder.com/40"></div>
             </div>
 
-            <div class="toolbar">
+            <div class="toolbar" style="flex-wrap: wrap; gap: 10px;">
                 <div class="search-group">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Tìm người mượn hoặc tên sách..." onkeyup="handleSearch()">
+                    <input type="text" id="search-input" placeholder="Tìm người, sách..." onkeyup="handleSearch()">
                 </div>
+                
                 <select id="filter-status" onchange="handleSearch()" style="padding: 8px; border-radius: 20px; border: 1px solid #ddd; outline: none;">
                     <option value="all">Tất cả trạng thái</option>
                     <option value="borrowing">Đang mượn</option>
+                    <option value="overdue">⚠️ Quá hạn</option>
                     <option value="returned">Đã trả</option>
                     <option value="reserved">Đặt trước</option>
                 </select>
+
+                <div class="date-filter-group">
+                    <span>Từ:</span> <input type="date" id="start-date" onchange="handleSearch()">
+                    <span>Đến:</span> <input type="date" id="end-date" onchange="handleSearch()">
+                </div>
+
+                <div style="margin-left: auto;">
+                    <button class="btn-add-new" style="background: #217346;" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Xuất Excel
+                    </button>
+                </div>
             </div>
 
             <div class="table-container">
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Người Mượn</th>
-                            <th>Tên Sách</th>
-                            <th>Ngày Mượn</th>
-                            <th>Hạn Trả</th>
-                            <th>Trạng Thái</th>
-                            <th>Hành Động</th>
+                            <th>ID</th><th>Người Mượn</th><th>Tên Sách</th>
+                            <th>Ngày Mượn / Hạn</th><th>Trạng Thái</th><th>Tiền Phạt</th><th>Hành Động</th>
                         </tr>
                     </thead>
                     <tbody id="loan-list"></tbody>
                 </table>
             </div>
+            
+            <div class="pagination-container" id="pagination-container">
+                <button class="btn-page" onclick="changePage(-1)" id="btn-prev"><i class="fas fa-chevron-left"></i></button>
+                <div id="pagination-numbers" style="display: flex; gap: 5px;"></div>
+                <button class="btn-page" onclick="changePage(1)" id="btn-next"><i class="fas fa-chevron-right"></i></button>
+            </div>
         </main>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/data.js"></script>
     <script src="js/admin_loans.js"></script>

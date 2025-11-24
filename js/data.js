@@ -9,7 +9,9 @@ const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DB = {
-    
+    // Expose biến _supabase để dùng ở các file khác nếu cần
+    supabase: _supabase,
+
     // ================= XÁC THỰC & LOG =================
     login: async (u, p) => {
         const { data: user, error } = await _supabase.from('users').select('*').eq('username', u).eq('password', p).single();
@@ -95,7 +97,7 @@ const DB = {
                             password: 'google_auth_user_' + randomId,
                             fullname: fullName,
                             email: email,
-                            avatar_url: avatar, // [CẬP NHẬT] Đã thêm dòng này để lưu ảnh
+                            avatar_url: avatar,
                             role: 'student', 
                             student_id: 'G-' + randomId 
                         };
@@ -105,13 +107,10 @@ const DB = {
                     }
 
                     if (currentUser) {
-                        // [CẬP NHẬT] Logic tự sửa lỗi nếu user cũ chưa có avatar
                         if (!currentUser.avatar_url && avatar) {
                             currentUser.avatar_url = avatar;
-                            // Cập nhật ngầm vào DB để lần sau có ảnh
                             _supabase.from('users').update({ avatar_url: avatar }).eq('id', currentUser.id).then();
                         }
-
                         if(avatar) localStorage.setItem('user_avatar_' + currentUser.id, avatar);
                         
                         sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -386,3 +385,77 @@ function toggleSubmenu(event) {
     const parentLi = event.currentTarget.parentElement;
     parentLi.classList.toggle('open');
 }
+
+// ======================================================
+// HỆ THỐNG THÔNG BÁO THÔNG MINH (TOAST NOTIFICATION)
+// ======================================================
+
+// 1. Tự động chèn CSS cho Toast vào trang
+const toastStyle = document.createElement('style');
+toastStyle.innerHTML = `
+    #toast-container {
+        position: fixed; top: 20px; right: 20px; z-index: 999999;
+        display: flex; flex-direction: column; gap: 10px;
+    }
+    .toast-msg {
+        background: white; color: #333; min-width: 300px; padding: 15px 20px;
+        border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        display: flex; align-items: center; gap: 15px;
+        border-left: 5px solid #333;
+        animation: toastSlideIn 0.4s ease, toastFadeOut 0.4s 3.6s forwards;
+        font-family: 'Segoe UI', Roboto, sans-serif; font-size: 14px;
+    }
+    .toast-msg.success { border-color: #52c41a; }
+    .toast-msg.success i { color: #52c41a; font-size: 20px; }
+    
+    .toast-msg.error { border-color: #ff4d4f; }
+    .toast-msg.error i { color: #ff4d4f; font-size: 20px; }
+    
+    .toast-msg.info { border-color: #1890ff; }
+    .toast-msg.info i { color: #1890ff; font-size: 20px; }
+    
+    @keyframes toastSlideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes toastFadeOut { to { opacity: 0; visibility: hidden; } }
+`;
+document.head.appendChild(toastStyle);
+
+// 2. Tạo Container chứa thông báo
+const toastContainer = document.createElement('div');
+toastContainer.id = 'toast-container';
+document.body.appendChild(toastContainer);
+
+// 3. Hàm hiển thị Toast (Thay thế alert)
+window.showToast = function(message, type = 'info') {
+    const toast = document.createElement('div');
+    
+    let icon = 'fa-info-circle';
+    if(type === 'success') icon = 'fa-check-circle';
+    if(type === 'error') icon = 'fa-exclamation-circle';
+    
+    toast.className = `toast-msg ${type}`;
+    toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+    
+    // Thêm vào container
+    const container = document.getElementById('toast-container') || document.body;
+    if(container.id === 'toast-container') container.appendChild(toast);
+    else document.body.appendChild(toast); // Fallback
+
+    // Tự động xóa DOM sau 4s
+    setTimeout(() => { toast.remove(); }, 4500);
+};
+
+// 4. "Ghi đè" lệnh alert() của trình duyệt
+// Bất cứ khi nào bạn gọi alert("...") nó sẽ chạy logic này
+window.alert = function(message) {
+    if (!message) return;
+    const msgLower = message.toString().toLowerCase();
+    
+    let type = 'info';
+    if (msgLower.includes('lỗi') || msgLower.includes('thất bại') || msgLower.includes('sai') || msgLower.includes('trùng')) {
+        type = 'error';
+    } else if (msgLower.includes('thành công') || msgLower.includes('đã thêm') || msgLower.includes('ok') || msgLower.includes('hoàn tất')) {
+        type = 'success';
+    }
+    
+    window.showToast(message, type);
+};
