@@ -149,7 +149,7 @@ ul { list-style: none; }
 .filter-tags .tag.active, .filter-tags .tag:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
 
 /* --- GRID SÁCH & TÀI NGUYÊN (3 CỘT) --- */
-#library-grid, #resource-grid { 
+#library-grid, #resource-grid, #favorites-grid { 
     display: grid; 
     grid-template-columns: repeat(3, 1fr) !important; /* Cố định 3 cột */
     gap: 25px; 
@@ -259,7 +259,7 @@ ul { list-style: none; }
     .profile-layout { flex-direction: column; }
     .card-register-container { flex-direction: column; }
     .toolbar-container { flex-direction: column; align-items: stretch; }
-    #library-grid, #resource-grid { grid-template-columns: 1fr !important; }
+    #library-grid, #resource-grid, #favorites-grid { grid-template-columns: 1fr !important; }
 }
 
 /* ... (Giữ nguyên phần Profile & Card Register) ... */
@@ -313,3 +313,65 @@ ul { list-style: none; }
 .lc-barcode-box { position: absolute; bottom: 15px; right: 20px; text-align: right; }
 .lc-barcode { height: 40px; width: 200px; background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px, #000 4px, #000 5px, #fff 5px, #fff 8px); border: 1px solid #eee; }
 .lc-code-num { font-family: monospace; font-size: 14px; text-align: center; margin-top: 4px; font-weight: bold; }
+
+/* ================================
+   NEW: Nút Trái Tim & Yêu Thích
+   ================================ */
+.book-item {
+    position: relative; /* Để trái tim định vị theo khung sách */
+}
+
+.heart-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 35px;
+    height: 35px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #ccc; /* Màu xám khi chưa tim */
+    cursor: pointer;
+    z-index: 10; /* Nằm đè lên ảnh */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.heart-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Khi đã yêu thích (có class active) */
+.heart-btn.active {
+    color: #ff4d4f; /* Màu đỏ */
+}
+
+/* Hiệu ứng nảy khi bấm */
+@keyframes heartPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+.heart-btn.active {
+    animation: heartPulse 0.3s ease;
+}
+.btn-buy-lg {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.3s;
+    margin-left: 10px;
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-buy-lg:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+}

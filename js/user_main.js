@@ -15,6 +15,7 @@ let avatarCropper = null;
 const BOOK_PRICE = 50000; 
 const CARD_PRICES = { '1m': 50000, '6m': 250000, '1y': 450000 };
 let cart = JSON.parse(localStorage.getItem('dlib_cart_' + currentUser.id)) || [];
+let favorites = JSON.parse(localStorage.getItem('dlib_favorites_' + currentUser.id)) || [];
 
 const ITEMS_PER_PAGE = 21;
 
@@ -41,6 +42,7 @@ function switchTab(tabName, element) {
     if (heroSection) heroSection.style.display = (tabName === 'home') ? 'flex' : 'none';
 
     if(tabName === 'library') renderLibrary();
+    if(tabName === 'favorites') renderFavorites();
     if(tabName === 'resources') renderResources();
     if(tabName === 'loans') renderLoans();
     if(tabName === 'home') loadStats();
@@ -115,8 +117,16 @@ async function renderLibrary() {
         const imgUrl = b.image_url || `https://via.placeholder.com/200x300?text=${encodeURIComponent(b.name.charAt(0))}`;
         let badge = b.is_google ? '<span class="tag tag-purple">Gợi ý Online</span>' : (b.stock > 0 ? '<span class="tag tag-blue">Sẵn sàng</span>' : '<span class="tag tag-red">Hết hàng</span>');
 
+        const isFav = favorites.some(f => f.id === b.id);
+        const heartClass = isFav ? 'fas fa-heart active' : 'far fa-heart';
+
         grid.innerHTML += `
             <div class="book-item" onclick="openDetail('${b.id}')" style="display:flex; flex-direction:column; height: 100%;">
+                
+                <div class="heart-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${b.id}')">
+                    <i class="${heartClass}"></i>
+                </div>
+
                 <img src="${imgUrl}" class="book-img" style="width: 100%; height: 240px; object-fit: cover;">
                 <div class="book-info" style="flex:1; display:flex; flex-direction:column;">
                     <h4 style="font-size:15px; margin-bottom:5px; color:#333; font-weight:700; line-height:1.4; max-height:42px; overflow:hidden;">${b.name}</h4>
@@ -212,8 +222,6 @@ async function renderResources() {
         }
 
         const viewBtnWidth = r.download_url ? '48%' : '100%';
-        
-        // [QUAN TRỌNG] Ưu tiên lấy link từ DB (resource_url) hoặc link Google (preview_link)
         const viewUrl = r.resource_url || r.preview_link || '';
         
         let displayImage = '';
@@ -223,7 +231,6 @@ async function renderResources() {
             displayImage = `<i class="fas ${iconClass}" style="font-size: 50px; color: ${iconColor};"></i>`;
         }
 
-        // [SỬA LỖI] Sử dụng data-link để tránh lỗi ký tự trong onclick
         grid.innerHTML += `
             <div class="book-item" style="display:flex; flex-direction:column; height: 100%;">
                 
@@ -264,7 +271,6 @@ function filterRes(type, el) {
 }
 function changeResPage(dir) { currentResPage += dir; renderResources(); }
 
-// [CẬP NHẬT] Hàm mở link tài nguyên an toàn
 function openResource(url) {
     if (url && url !== 'undefined' && url !== 'null' && url.trim() !== '' && url !== '#') {
         window.open(url, '_blank');
@@ -308,13 +314,15 @@ function openDetail(id) {
     document.getElementById('d-pub').innerText = book.publisher || 'Đang cập nhật';
     document.getElementById('d-desc').innerText = book.description || 'Chưa có mô tả.';
     
-    const btnAction = document.getElementById('btn-action');
+    // [CẬP NHẬT] Lấy 2 nút mới
+    const btnBorrow = document.getElementById('btn-borrow');
+    const btnBuy = document.getElementById('btn-buy');
     const btnRead = document.getElementById('btn-read-trial');
     const stockEl = document.getElementById('d-stock');
 
-    // [LOGIC XEM TRƯỚC] Ưu tiên lấy link từ DB nếu có
     const linkDoc = book.preview_link || (book.is_google ? book.preview_link : null);
     
+    // Logic Đọc thử
     if (linkDoc && linkDoc.trim() !== "") {
         btnRead.style.display = 'inline-block';
         btnRead.onclick = () => window.open(linkDoc, '_blank');
@@ -324,22 +332,40 @@ function openDetail(id) {
 
     if (book.is_google) {
         stockEl.innerText = "Sách Online"; stockEl.style.color = '#722ed1';
-        btnAction.style.display = 'none';
+        btnBorrow.style.display = 'none';
+        btnBuy.style.display = 'none';
     } else {
-        btnAction.style.display = 'inline-block';
         if (book.stock > 0) { 
             stockEl.innerText = `Còn ${book.stock} cuốn`; stockEl.style.color = 'green'; 
-            const isInCart = cart.some(item => item.type === 'book' && item.data.id === book.id);
-            if(isInCart) {
-                btnAction.innerText = "Đã có trong giỏ"; btnAction.style.background = '#ccc'; btnAction.disabled = true;
-            } else {
-                btnAction.innerText = "Thêm vào giỏ hàng"; btnAction.style.background = '#1890ff'; btnAction.disabled = false;
-                btnAction.onclick = () => addBookToCart(book); 
-            }
+            
+            // Hiện cả 2 nút
+            btnBorrow.style.display = 'inline-block';
+            btnBuy.style.display = 'inline-block';
+
+            // Xử lý nút Mượn
+            btnBorrow.innerText = "Mượn (0đ)";
+            btnBorrow.className = "btn-primary-lg";
+            btnBorrow.style.background = "#1890ff";
+            btnBorrow.disabled = false;
+            btnBorrow.onclick = () => addBookToCart(book, 'borrow');
+
+            // Xử lý nút Mua
+            btnBuy.innerText = "Mua (50k)";
+            btnBuy.className = "btn-buy-lg"; // Class mới trong CSS
+            btnBuy.disabled = false;
+            btnBuy.onclick = () => addBookToCart(book, 'buy');
+
         } else { 
+            // Hết hàng -> Chỉ hiện nút Đặt trước (Thay thế nút mượn)
             stockEl.innerText = "Hết hàng"; stockEl.style.color = 'red'; 
-            btnAction.innerText = "Đặt Trước"; btnAction.style.background = '#faad14'; btnAction.disabled = false;
-            btnAction.onclick = () => handleAction('reserved'); 
+            
+            btnBorrow.style.display = 'inline-block';
+            btnBorrow.innerText = "Đặt Trước"; 
+            btnBorrow.style.background = '#faad14'; 
+            btnBorrow.disabled = false;
+            btnBorrow.onclick = () => handleAction('reserved');
+            
+            btnBuy.style.display = 'none'; // Không cho mua khi hết hàng
         }
     }
     modal.classList.add('active');
@@ -402,46 +428,134 @@ function handleAddCardToCart() {
     cart.push(cardItem); saveCart(); updateCartBadge(); alert(`Đã thêm gói đăng ký thẻ ${planName} vào giỏ hàng!`);
     const cartTabBtn = document.querySelector('.top-nav li:last-child'); if(cartTabBtn) switchTab('cart', cartTabBtn);
 }
-function addBookToCart(book) {
-    const item = { type: 'book', data: book, price: BOOK_PRICE };
-    cart.push(item); saveCart(); updateCartBadge(); alert(`Đã thêm "${book.name}" vào giỏ hàng!`); closeModal();
+
+// [LOGIC MỚI] Thêm sách vào giỏ với Phân loại (Mượn/Mua)
+function addBookToCart(book, actionType) {
+    let finalPrice = 0;
+    let label = '';
+
+    if (actionType === 'borrow') {
+        finalPrice = 0;
+        label = 'Mượn sách';
+    } else {
+        finalPrice = BOOK_PRICE; // 50.000
+        label = 'Mua sách';
+    }
+
+    // Check trùng (chỉ check nếu cùng loại action)
+    const exists = cart.some(item => item.type === 'book' && item.data.id === book.id && item.action === actionType);
+    if(exists) { alert(`Sách này đã có trong giỏ (${label})!`); return; }
+
+    const item = { 
+        type: 'book', 
+        action: actionType, // 'borrow' hoặc 'buy'
+        data: book, 
+        price: finalPrice 
+    };
+    
+    cart.push(item); 
+    saveCart(); 
+    updateCartBadge(); 
+    alert(`Đã thêm "${book.name}" vào giỏ hàng (${label})!`); 
+    closeModal();
 }
+
 function removeFromCart(index) { if(confirm("Xóa mục này khỏi giỏ?")) { cart.splice(index, 1); saveCart(); renderCart(); updateCartBadge(); } }
 function saveCart() { localStorage.setItem('dlib_cart_' + currentUser.id, JSON.stringify(cart)); }
 function updateCartBadge() { const el = document.getElementById('cart-badge'); if(el) el.innerText = cart.length; }
+
+// [LOGIC MỚI] Hiển thị giỏ hàng phân biệt Mượn/Mua
 function renderCart() {
     const tbody = document.getElementById('cart-list-body'); const subTotalEl = document.getElementById('sub-total'); const finalTotalEl = document.getElementById('final-total');
     if(!tbody) return; tbody.innerHTML = ''; let total = 0;
-    if (cart.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #999;">Giỏ hàng trống</td></tr>'; subTotalEl.innerText = '0 đ'; finalTotalEl.innerText = '0 đ'; return; }
+    if (cart.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color: #999;">Giỏ hàng trống</td></tr>'; subTotalEl.innerText = '0 đ'; finalTotalEl.innerText = '0 đ'; return; }
+    
     cart.forEach((item, index) => {
-        total += item.price; let displayHTML = '';
-        if(item.type === 'book') { const b = item.data; const img = b.image_url || 'https://via.placeholder.com/40'; displayHTML = `<div style="display:flex; align-items:center; gap:15px;"><img src="${img}" style="width:40px; height:60px; object-fit:cover; border-radius:4px;"><div><div style="font-weight:bold; color:#333;">${b.name}</div><small style="color:#666;">Sách giấy - Phí cọc</small></div></div>`; }
-        else if (item.type === 'card') { displayHTML = `<div style="display:flex; align-items:center; gap:15px;"><div style="width:40px; height:40px; background:#e6f7ff; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#1890ff;"><i class="fas fa-id-card fa-lg"></i></div><div><div style="font-weight:bold; color:#333;">Đăng ký thẻ thư viện (${item.data.planName})</div><small style="color:#666;">${item.data.fullname} - ${item.data.role}</small></div></div>`; }
-        tbody.innerHTML += `<tr><td>${displayHTML}</td><td style="font-weight: 500; color: #333;">${item.price.toLocaleString()} đ</td><td><button class="btn-del" style="color:#ff4d4f; border-color:#ff4d4f;" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i> Xóa</button></td></tr>`;
+        total += item.price; 
+        let displayHTML = '';
+        let typeLabel = '';
+
+        if(item.type === 'book') { 
+            const b = item.data; 
+            const img = b.image_url || 'https://via.placeholder.com/40'; 
+            displayHTML = `<div style="display:flex; align-items:center; gap:15px;"><img src="${img}" style="width:40px; height:60px; object-fit:cover; border-radius:4px;"><div><div style="font-weight:bold; color:#333;">${b.name}</div><small style="color:#666;">${b.author}</small></div></div>`; 
+            
+            if (item.action === 'borrow') {
+                typeLabel = '<span class="tag tag-blue">Mượn đọc</span>';
+            } else {
+                typeLabel = '<span class="tag" style="background:#f6ffed; color:#52c41a; border:1px solid #b7eb8f">Mua sở hữu</span>';
+            }
+        
+        } else if (item.type === 'card') { 
+            displayHTML = `<div style="display:flex; align-items:center; gap:15px;"><div style="width:40px; height:40px; background:#e6f7ff; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#1890ff;"><i class="fas fa-id-card fa-lg"></i></div><div><div style="font-weight:bold; color:#333;">Đăng ký thẻ thư viện (${item.data.planName})</div><small style="color:#666;">${item.data.fullname} - ${item.data.role}</small></div></div>`; 
+            typeLabel = '<span class="tag tag-purple">Dịch vụ</span>';
+        }
+        
+        tbody.innerHTML += `
+            <tr>
+                <td>${displayHTML}</td>
+                <td>${typeLabel}</td>
+                <td style="font-weight: 500; color: #333;">${item.price.toLocaleString()} đ</td>
+                <td><button class="btn-del" style="color:#ff4d4f; border-color:#ff4d4f;" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i> Xóa</button></td>
+            </tr>`;
     });
     subTotalEl.innerText = total.toLocaleString() + ' đ'; finalTotalEl.innerText = total.toLocaleString() + ' đ';
 }
+
+// [FIXED] Xử lý chuyển tab chính xác sau thanh toán
 async function processCheckout() {
     if (cart.length === 0) { alert("Giỏ hàng trống!"); return; }
     if (!confirm(`Xác nhận thanh toán tổng cộng ${document.getElementById('final-total').innerText}?`)) return;
     const btn = document.querySelector('.btn-checkout'); const oldText = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...'; btn.disabled = true;
     try {
-        let bookCount = 0; let cardCreated = false; const invoiceLog = [];
+        let borrowCount = 0; 
+        let buyCount = 0;
+        let cardCreated = false; 
+        const invoiceLog = [];
+        
         for (const item of cart) {
             if (item.type === 'book') {
-                const res = await DB.borrowBook(currentUser.id, item.data.id, 'borrowing');
-                if (res.success) { bookCount++; invoiceLog.push({ id: `INV-${Date.now()}-${Math.floor(Math.random()*1000)}`, content: `Phí cọc: ${item.data.name}`, amount: item.price, date: new Date().toISOString() }); }
+                // Nếu là MƯỢN
+                if (item.action === 'borrow') {
+                    const res = await DB.borrowBook(currentUser.id, item.data.id, 'borrowing');
+                    if (res.success) { 
+                        borrowCount++; 
+                        invoiceLog.push({ id: `LOAN-${Date.now()}-${Math.floor(Math.random()*1000)}`, content: `Mượn sách: ${item.data.name}`, amount: 0, date: new Date().toISOString() }); 
+                    }
+                } 
+                // Nếu là MUA
+                else {
+                    const res = await DB.borrowBook(currentUser.id, item.data.id, 'sold'); 
+                    buyCount++;
+                    invoiceLog.push({ id: `BUY-${Date.now()}-${Math.floor(Math.random()*1000)}`, content: `Mua sách: ${item.data.name}`, amount: item.price, date: new Date().toISOString() });
+                }
+
             } else if (item.type === 'card') {
                 const cData = item.data; const today = new Date(); if(cData.plan === '1m') today.setMonth(today.getMonth() + 1); else if(cData.plan === '6m') today.setMonth(today.getMonth() + 6); else today.setFullYear(today.getFullYear() + 1);
                 cData.expiry = today.toISOString(); localStorage.setItem('dlib_card_' + currentUser.id, JSON.stringify(cData)); cardCreated = true;
                 invoiceLog.push({ id: `INV-CARD-${Date.now()}`, content: `Đăng ký thẻ thư viện (${cData.planName})`, amount: item.price, date: new Date().toISOString() });
             }
         }
+        
         let oldInvoices = JSON.parse(localStorage.getItem('dlib_invoices_' + currentUser.id)) || []; let newInvoices = [...invoiceLog, ...oldInvoices]; localStorage.setItem('dlib_invoices_' + currentUser.id, JSON.stringify(newInvoices));
-        let msg = "✅ Thanh toán thành công!"; if(bookCount > 0) msg += `\n- Đã mượn ${bookCount} cuốn sách.`; if(cardCreated) msg += `\n- Đã kích hoạt thẻ thư viện thành công!`;
+        
+        let msg = "✅ Giao dịch hoàn tất!"; 
+        if(borrowCount > 0) msg += `\n- Đã mượn ${borrowCount} cuốn sách (Miễn phí).`; 
+        if(buyCount > 0) msg += `\n- Đã mua ${buyCount} cuốn sách.`;
+        if(cardCreated) msg += `\n- Đã kích hoạt thẻ thư viện thành công!`;
+        
         alert(msg); cart = []; saveCart(); updateCartBadge(); renderCart();
-        if(cardCreated) { const cardTabBtn = document.querySelectorAll('.top-nav li')[2]; if(cardTabBtn) switchTab('card-register', cardTabBtn); } else { const historyTabBtn = document.querySelectorAll('.top-nav li')[3]; if(historyTabBtn) switchTab('loans', historyTabBtn); }
-    } catch (e) { console.error(e); alert("Lỗi hệ thống!"); } finally { btn.innerHTML = oldText; btn.disabled = false; }
+        
+        // --- ĐOẠN FIX LỖI CHUYỂN TAB ---
+        if(cardCreated) { 
+            const cardTabBtn = document.querySelector('li[onclick*="card-register"]'); 
+            if(cardTabBtn) switchTab('card-register', cardTabBtn); 
+        } else { 
+            const historyTabBtn = document.querySelector('li[onclick*="loans"]'); 
+            if(historyTabBtn) switchTab('loans', historyTabBtn); 
+        }
+
+    } catch (e) { console.error(e); alert("Lỗi hệ thống: " + e.message); } finally { btn.innerHTML = oldText; btn.disabled = false; }
 }
 async function renderLoans() {
     const tbody = document.getElementById('loan-list'); tbody.innerHTML = '<tr><td colspan="5">Đang tải dữ liệu...</td></tr>';
@@ -488,3 +602,54 @@ function closeAvatarModal() { document.getElementById('avatarCropModal').style.d
 function toggleUserMenu() { document.getElementById('userDropdown').classList.toggle('active'); }
 document.addEventListener('click', function(event) { const userAction = document.querySelector('.user-action'); if (userAction && !userAction.contains(event.target)) document.getElementById('userDropdown').classList.remove('active'); });
 document.addEventListener('DOMContentLoaded', () => { loadStats(); updateCartBadge(); if(currentUser.avatar_url) { const hAvatar = document.getElementById('header-avatar'); if(hAvatar) hAvatar.src = currentUser.avatar_url; } });
+
+// --- LOGIC YÊU THÍCH (FAVORITES) ---
+function toggleFavorite(event, bookId) {
+    event.stopPropagation();
+    let book = currentLibFiltered.find(b => b.id == bookId) || favorites.find(f => f.id == bookId);
+    if (!book) book = allBooks.find(b => b.id == bookId);
+    if (!book) return; 
+    const index = favorites.findIndex(f => f.id == bookId);
+    const btnIcon = event.currentTarget.querySelector('i');
+    const btnDiv = event.currentTarget;
+    if (index === -1) {
+        favorites.push(book);
+        btnDiv.classList.add('active');
+        btnIcon.className = 'fas fa-heart active';
+        alert(`Đã thêm "${book.name}" vào Yêu thích!`);
+    } else {
+        favorites.splice(index, 1);
+        btnDiv.classList.remove('active');
+        btnIcon.className = 'far fa-heart';
+        const favTab = document.getElementById('tab-favorites');
+        if (favTab && favTab.classList.contains('active')) {
+            renderFavorites();
+        }
+    }
+    localStorage.setItem('dlib_favorites_' + currentUser.id, JSON.stringify(favorites));
+}
+
+function renderFavorites() {
+    const grid = document.getElementById('favorites-grid');
+    grid.innerHTML = '';
+    if (favorites.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888; margin-top: 30px;">Bạn chưa yêu thích cuốn sách nào.</p>';
+        return;
+    }
+    favorites.forEach(b => {
+        const imgUrl = b.image_url || `https://via.placeholder.com/200x300?text=${encodeURIComponent(b.name.charAt(0))}`;
+        let badge = b.is_google ? '<span class="tag tag-purple">Online</span>' : (b.stock > 0 ? '<span class="tag tag-blue">Sẵn sàng</span>' : '<span class="tag tag-red">Hết hàng</span>');
+        grid.innerHTML += `
+            <div class="book-item" onclick="openDetail('${b.id}')" style="display:flex; flex-direction:column; height: 100%;">
+                <div class="heart-btn active" onclick="toggleFavorite(event, '${b.id}')">
+                    <i class="fas fa-heart active"></i>
+                </div>
+                <img src="${imgUrl}" class="book-img" style="width: 100%; height: 240px; object-fit: cover;">
+                <div class="book-info" style="flex:1; display:flex; flex-direction:column;">
+                    <h4 style="font-size:15px; margin-bottom:5px; color:#333; font-weight:700; line-height:1.4; max-height:42px; overflow:hidden;">${b.name}</h4>
+                    <p style="font-size:13px; color:#888; margin-bottom:8px;">${b.author}</p>
+                    <div style="margin-top:auto;">${badge}</div>
+                </div>
+            </div>`;
+    });
+}

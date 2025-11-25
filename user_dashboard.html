@@ -24,6 +24,7 @@
                 <ul>
                     <li class="active" onclick="switchTab('home', this)"><a href="#"><i class="fas fa-home"></i> Trang Chủ</a></li>
                     <li onclick="switchTab('library', this)"><a href="#"><i class="fas fa-book"></i> Tra Cứu Sách</a></li>
+                    <li onclick="switchTab('favorites', this)"><a href="#"><i class="fas fa-heart"></i> Yêu Thích</a></li>
                     <li onclick="switchTab('resources', this)"><a href="#"><i class="fas fa-cloud-download-alt"></i> Tài Nguyên Số</a></li>
                     <li onclick="switchTab('card-register', this)"><a href="#"><i class="fas fa-id-card"></i> Thẻ Thư Viện</a></li>
                     <li onclick="switchTab('loans', this)"><a href="#"><i class="fas fa-history"></i> Lịch Sử Mượn</a></li>
@@ -143,6 +144,13 @@
                 </div>
             </div>
 
+            <div id="tab-favorites" class="tab-section">
+                <div class="section-title">
+                    <h3><i class="fas fa-heart"></i> Sách Đã Yêu Thích</h3>
+                </div>
+                <div id="favorites-grid" class="book-grid"></div>
+            </div>
+
             <div id="tab-resources" class="tab-section">
                 <div class="section-title">
                     <h3><i class="fas fa-cloud-download-alt"></i> Kho Tài Nguyên Số</h3>
@@ -186,7 +194,7 @@
                 <div class="cart-container">
                     <div class="cart-items">
                         <table class="modern-table" id="cart-table">
-                            <thead><tr><th>Sản phẩm / Dịch vụ</th><th>Giá tiền</th><th>Thao tác</th></tr></thead>
+                            <thead><tr><th>Sản phẩm / Dịch vụ</th><th>Loại hình</th><th>Giá tiền</th><th>Thao tác</th></tr></thead>
                             <tbody id="cart-list-body"></tbody>
                         </table>
                     </div>
@@ -353,9 +361,15 @@
                     <div class="stock-status" id="d-stock">Còn hàng</div>
                     <div class="desc-box"><h4>Giới thiệu nội dung:</h4><p id="d-desc">...</p></div>
                     
-                    <div class="action-buttons" style="display: flex; gap: 10px;">
-                        <button id="btn-action" class="btn-primary-lg">Mượn Ngay</button>
+                    <div class="action-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button id="btn-borrow" class="btn-primary-lg" style="background-color: #1890ff;">
+                            <i class="fas fa-book-reader"></i> Mượn (0đ)
+                        </button>
                         
+                        <button id="btn-buy" class="btn-buy-lg">
+                            <i class="fas fa-shopping-cart"></i> Mua (50k)
+                        </button>
+
                         <button id="btn-read-trial" class="btn-primary-lg" style="background-color: #722ed1; display: none;">
                             <i class="fas fa-book-open"></i> Đọc thử
                         </button>
