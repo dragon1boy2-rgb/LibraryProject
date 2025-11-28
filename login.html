@@ -53,7 +53,9 @@
                 <span>hoặc sử dụng tài khoản của bạn</span>
                 <input type="text" id="login-user" placeholder="Tên đăng nhập" required />
                 <input type="password" id="login-pass" placeholder="Mật khẩu" required />
-                <a href="#">Quên mật khẩu?</a>
+                
+                <a href="#" onclick="openForgotModal(event)">Quên mật khẩu?</a>
+                
                 <button type="submit">Đăng Nhập</button>
                 <p class="mobile-link" onclick="toggleForm()">Chưa có tài khoản? Đăng ký</p>
             </form>
@@ -74,6 +76,30 @@
             </div>
         </div>
     </div>
+
+    <div class="modal-overlay" id="forgotModal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeForgotModal()">&times;</span>
+            <h2>Quên Mật Khẩu?</h2>
+            <p>Nhập thông tin tài khoản để nhận mật khẩu mới qua Email.</p>
+            
+            <form onsubmit="handleResetPassword(event)">
+                <input type="text" id="reset-user" placeholder="Tên đăng nhập" required />
+                <input type="email" id="reset-email" placeholder="Email đăng ký" required />
+                
+                <button type="submit" style="background: #ff4b2b; border-color: #ff4b2b; margin-top: 15px;">
+                    Gửi Mật Khẩu Mới
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          emailjs.init("ZkujgnYOskS3ssBQT"); 
+       })();
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/data.js"></script>

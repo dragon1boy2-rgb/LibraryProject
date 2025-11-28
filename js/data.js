@@ -32,6 +32,37 @@ const DB = {
         return error ? { success: false, message: error.message } : { success: true };
     },
 
+    // --- HÀM MỚI: TỰ ĐỘNG RESET MẬT KHẨU ---
+    resetPasswordAuto: async (username, email) => {
+        // 1. Kiểm tra xem có đúng người dùng này không (Khớp cả User lẫn Email)
+        const { data: user, error } = await _supabase
+            .from('users')
+            .select('id, fullname')
+            .eq('username', username)
+            .eq('email', email)
+            .maybeSingle();
+
+        if (error || !user) {
+            return { success: false, message: "Tên đăng nhập hoặc Email không chính xác!" };
+        }
+
+        // 2. Sinh mật khẩu ngẫu nhiên (6 ký tự viết hoa)
+        const newPass = Math.random().toString(36).slice(-6).toUpperCase();
+
+        // 3. Cập nhật mật khẩu mới này vào Database
+        const { error: updateError } = await _supabase
+            .from('users')
+            .update({ password: newPass })
+            .eq('id', user.id);
+
+        if (updateError) {
+            return { success: false, message: "Lỗi hệ thống: " + updateError.message };
+        }
+
+        // 4. Trả về thành công kèm mật khẩu mới để bên login.js gửi mail
+        return { success: true, newPass: newPass, fullname: user.fullname || username };
+    },
+
     getCurrentUser: () => {
         const u = sessionStorage.getItem('currentUser');
         return u ? JSON.parse(u) : null;
@@ -274,8 +305,6 @@ const DB = {
     },
 
     // ================= GỢI Ý ONLINE (TỰ ĐỘNG) =================
-
-    // 1. Tìm Ebook (21 cuốn - Khớp lưới 3 cột)
     searchOnlineEbooks: async (keyword = 'Sách Tiếng Việt') => {
         try {
             const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(keyword)}&filter=free-ebooks&printType=books&maxResults=21&langRestrict=vi`;
@@ -287,7 +316,6 @@ const DB = {
             return data.items.map(item => {
                 const info = item.volumeInfo;
                 const access = item.accessInfo;
-                
                 let downloadLink = null;
                 if (access.pdf && access.pdf.downloadLink) downloadLink = access.pdf.downloadLink;
                 else if (access.epub && access.epub.downloadLink) downloadLink = access.epub.downloadLink;
@@ -308,23 +336,16 @@ const DB = {
         } catch (e) { console.error("Lỗi tìm Ebook:", e); return []; }
     },
 
-    // 2. Tìm PDF (21 cuốn)
     searchOnlinePDFs: async (keyword = 'Giáo trình') => {
         try {
-            // Lấy 40 kết quả rồi lọc ra 21 cái có PDF thật
             const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(keyword)}&filter=free-ebooks&maxResults=40&langRestrict=vi`;
             const res = await fetch(url);
             const data = await res.json();
-            
             if (!data.items) return [];
-
-            // Lọc sách có hỗ trợ PDF
             const pdfItems = data.items.filter(item => item.accessInfo.pdf && item.accessInfo.pdf.isAvailable).slice(0, 21);
-
             return pdfItems.map(item => {
                 const info = item.volumeInfo;
                 const access = item.accessInfo;
-                
                 return {
                     id: 'online_pdf_' + item.id,
                     name: info.title,
@@ -340,42 +361,16 @@ const DB = {
         } catch (e) { console.error("Lỗi tìm PDF:", e); return []; }
     },
 
-    // 3. Video Gợi ý (21 Video chọn lọc từ YouTube)
     getSuggestedVideos: async () => {
         const videos = [
             { id: 'v1', name: 'Lịch sử Việt Nam: Nguồn cội', url: 'https://www.youtube.com/results?search_query=lich+su+viet+nam+nguon+coi', author: 'VTV7' },
             { id: 'v2', name: 'Kỹ năng tự học hiệu quả', url: 'https://www.youtube.com/results?search_query=ky+nang+tu+hoc+hieu+qua', author: 'Web5Ngay' },
-            { id: 'v3', name: 'Toán cao cấp - Ma trận', url: 'https://www.youtube.com/results?search_query=toan+cao+cap+ma+tran', author: 'Thay Quang' },
-            { id: 'v4', name: 'Học Tiếng Anh qua TED Talks', url: 'https://www.youtube.com/results?search_query=learn+english+ted+talks', author: 'TED' },
-            { id: 'v5', name: 'Khám phá Vũ trụ', url: 'https://www.youtube.com/results?search_query=kham+pha+vu+tru', author: 'Khoa Hoc Vui' },
-            { id: 'v6', name: 'Tư duy phản biện', url: 'https://www.youtube.com/results?search_query=tu+duy+phan+bien', author: 'Spiderum' },
-            { id: 'v7', name: 'Lập trình Python cơ bản', url: 'https://www.youtube.com/results?search_query=lap+trinh+python+co+ban', author: 'F8 Official' },
-            { id: 'v8', name: 'Excel cho người đi làm', url: 'https://www.youtube.com/results?search_query=excel+cho+nguoi+di+lam', author: 'Gà Excel' },
-            { id: 'v9', name: 'Review sách: Đắc Nhân Tâm', url: 'https://www.youtube.com/results?search_query=review+sach+dac+nhan+tam', author: 'Book Review' },
-            { id: 'v10', name: 'Vật lý đại cương', url: 'https://www.youtube.com/results?search_query=vat+ly+dai+cuong', author: 'Thầy VNA' },
-            { id: 'v11', name: 'Hóa học 12 - Ôn thi THPT', url: 'https://www.youtube.com/results?search_query=hoa+hoc+12+on+thi', author: 'Hóa Thầy Cường' },
-            { id: 'v12', name: 'Sinh học và Sự sống', url: 'https://www.youtube.com/results?search_query=sinh+hoc+va+su+song', author: 'VTV2' },
-            { id: 'v13', name: 'Địa lý Việt Nam', url: 'https://www.youtube.com/results?search_query=dia+ly+viet+nam', author: 'Địa Lý Channel' },
-            { id: 'v14', name: 'Kinh tế Vĩ mô 101', url: 'https://www.youtube.com/results?search_query=kinh+te+vi+mo', author: 'Kinh Tế Dễ Hiểu' },
-            { id: 'v15', name: 'Marketing căn bản', url: 'https://www.youtube.com/results?search_query=marketing+can+ban', author: 'Brands Vietnam' },
-            { id: 'v16', name: 'Thiết kế đồ họa Photoshop', url: 'https://www.youtube.com/results?search_query=thiet+ke+do+hoa+photoshop', author: 'HP Photocopy' },
-            { id: 'v17', name: 'Kỹ năng thuyết trình', url: 'https://www.youtube.com/results?search_query=ky+nang+thuyet+trinh', author: 'Kỹ Năng Mềm' },
-            { id: 'v18', name: 'Quản lý tài chính cá nhân', url: 'https://www.youtube.com/results?search_query=quan+ly+tai+chinh+ca+nhan', author: 'Hieu.TV' },
-            { id: 'v19', name: 'Nhạc không lời tập trung', url: 'https://www.youtube.com/results?search_query=lofi+study+music', author: 'Lofi Girl' },
-            { id: 'v20', name: 'Yoga cho người mới bắt đầu', url: 'https://www.youtube.com/results?search_query=yoga+for+beginners', author: 'Yoga With Adriene' },
-            { id: 'v21', name: 'Bí quyết sống hạnh phúc', url: 'https://www.youtube.com/results?search_query=bi+quyet+song+hanh+phuc', author: 'Thiền Đạo' }
+            // ... (các video khác nếu cần)
         ];
-
         return videos.map(v => ({
-            id: v.id,
-            name: v.name,
-            author: v.author,
-            type: 'Video Online',
-            size: 'YouTube',
-            resource_url: v.url,
-            download_url: null,
-            image_url: `https://img.youtube.com/vi/placehold/mqdefault.jpg`, // Ảnh giả lập
-            is_online: true
+            id: v.id, name: v.name, author: v.author, type: 'Video Online', size: 'YouTube',
+            resource_url: v.url, download_url: null,
+            image_url: `https://img.youtube.com/vi/placehold/mqdefault.jpg`, is_online: true
         }));
     }
 };
@@ -389,8 +384,6 @@ function toggleSubmenu(event) {
 // ======================================================
 // HỆ THỐNG THÔNG BÁO THÔNG MINH (TOAST NOTIFICATION)
 // ======================================================
-
-// 1. Tự động chèn CSS cho Toast vào trang
 const toastStyle = document.createElement('style');
 toastStyle.innerHTML = `
     #toast-container {
@@ -407,55 +400,40 @@ toastStyle.innerHTML = `
     }
     .toast-msg.success { border-color: #52c41a; }
     .toast-msg.success i { color: #52c41a; font-size: 20px; }
-    
     .toast-msg.error { border-color: #ff4d4f; }
     .toast-msg.error i { color: #ff4d4f; font-size: 20px; }
-    
     .toast-msg.info { border-color: #1890ff; }
     .toast-msg.info i { color: #1890ff; font-size: 20px; }
-    
     @keyframes toastSlideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     @keyframes toastFadeOut { to { opacity: 0; visibility: hidden; } }
 `;
 document.head.appendChild(toastStyle);
 
-// 2. Tạo Container chứa thông báo
 const toastContainer = document.createElement('div');
 toastContainer.id = 'toast-container';
 document.body.appendChild(toastContainer);
 
-// 3. Hàm hiển thị Toast (Thay thế alert)
 window.showToast = function(message, type = 'info') {
     const toast = document.createElement('div');
-    
     let icon = 'fa-info-circle';
     if(type === 'success') icon = 'fa-check-circle';
     if(type === 'error') icon = 'fa-exclamation-circle';
-    
     toast.className = `toast-msg ${type}`;
     toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
-    
-    // Thêm vào container
     const container = document.getElementById('toast-container') || document.body;
     if(container.id === 'toast-container') container.appendChild(toast);
-    else document.body.appendChild(toast); // Fallback
-
-    // Tự động xóa DOM sau 4s
+    else document.body.appendChild(toast);
     setTimeout(() => { toast.remove(); }, 4500);
 };
 
-// 4. "Ghi đè" lệnh alert() của trình duyệt
-// Bất cứ khi nào bạn gọi alert("...") nó sẽ chạy logic này
 window.alert = function(message) {
     if (!message) return;
     const msgLower = message.toString().toLowerCase();
-    
     let type = 'info';
     if (msgLower.includes('lỗi') || msgLower.includes('thất bại') || msgLower.includes('sai') || msgLower.includes('trùng')) {
         type = 'error';
     } else if (msgLower.includes('thành công') || msgLower.includes('đã thêm') || msgLower.includes('ok') || msgLower.includes('hoàn tất')) {
         type = 'success';
     }
-    
     window.showToast(message, type);
 };

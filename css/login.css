@@ -1,3 +1,5 @@
+/* css/login.css */
+
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap');
 
 * { box-sizing: border-box; }
@@ -114,7 +116,7 @@ button.ghost { background-color: transparent; border-color: #FFFFFF; }
 .container.right-panel-active .overlay-right { transform: translateX(20%); }
 
 /* Social Icons */
-.social-container { margin: 15px 0 25px 0; } /* Cập nhật margin cho cân đối */
+.social-container { margin: 15px 0 25px 0; } 
 
 .social-container a {
     border: 1px solid #DDDDDD; border-radius: 50%; display: inline-flex;
@@ -126,7 +128,7 @@ button.ghost { background-color: transparent; border-color: #FFFFFF; }
 /* Responsive cho điện thoại */
 @media (max-width: 768px) {
     .container { width: 90%; min-height: 550px; }
-    .overlay-container { display: none; } /* Ẩn hiệu ứng trượt trên mobile */
+    .overlay-container { display: none; } 
     .sign-in-container, .sign-up-container { width: 100%; }
     .sign-up-container { z-index: 1; opacity: 0; }
     .container.right-panel-active .sign-in-container { opacity: 0; pointer-events: none; }
@@ -134,14 +136,12 @@ button.ghost { background-color: transparent; border-color: #FFFFFF; }
     .mobile-link { display: block; }
 }
 
-/* ==================================================
-   MỚI THÊM: Custom Button cho Google Login
-   ================================================== */
+/* Custom Button cho Google Login */
 .social-container a.social.google-btn {
-    width: auto;             /* Tự động co giãn */
-    min-width: 220px;        /* Chiều rộng tối thiểu */
-    height: 45px;            /* Tăng chiều cao */
-    border-radius: 25px;     /* Bo tròn kiểu viên thuốc */
+    width: auto;            
+    min-width: 220px;       
+    height: 45px;          
+    border-radius: 25px;    
     border: 1px solid #ddd;
     background-color: #fff;
     color: #555;
@@ -152,11 +152,10 @@ button.ghost { background-color: transparent; border-color: #FFFFFF; }
     justify-content: center;
     align-items: center;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Bóng nhẹ */
-    margin: 0; /* Reset margin cũ của nút tròn */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+    margin: 0; 
 }
 
-/* Hiệu ứng khi di chuột vào nút Google */
 .social-container a.social.google-btn:hover {
     background-color: #f8f9fa;
     transform: translateY(-2px);
@@ -164,3 +163,32 @@ button.ghost { background-color: transparent; border-color: #FFFFFF; }
     border-color: #c1c1c1;
     color: #333;
 }
+
+/* --- CSS CHO MODAL QUÊN MẬT KHẨU --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: none; justify-content: center; align-items: center;
+    z-index: 9999; backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease;
+}
+.modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
+
+.modal-box {
+    background: white; padding: 40px; border-radius: 10px;
+    width: 400px; max-width: 90%; text-align: center;
+    position: relative; box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    transform: translateY(0); animation: slideDown 0.3s;
+}
+
+.modal-box h2 { color: #333; margin-bottom: 10px; }
+.modal-box p { font-size: 13px; color: #666; margin-bottom: 20px; }
+
+.close-btn {
+    position: absolute; top: 10px; right: 15px;
+    font-size: 28px; cursor: pointer; color: #aaa; transition: 0.2s;
+}
+.close-btn:hover { color: #333; transform: scale(1.1); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
