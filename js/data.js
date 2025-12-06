@@ -284,9 +284,20 @@ const DB = {
         return data || []; 
     },
     
+    // [FIX] Cập nhật hàm borrowBook để thêm ngày mượn
     borrowBook: async (userId, bookId, actionType) => {
-        const dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 14);
-        const { error } = await _supabase.from('loans').insert([{ user_id: userId, book_id: bookId, status: actionType, due_date: dueDate.toISOString() }]);
+        const borrowDate = new Date(); // Lấy ngày hiện tại
+        const dueDate = new Date(); 
+        dueDate.setDate(dueDate.getDate() + 14); // Hạn trả 14 ngày
+
+        const { error } = await _supabase.from('loans').insert([{ 
+            user_id: userId, 
+            book_id: bookId, 
+            status: actionType, 
+            borrow_date: borrowDate.toISOString(), 
+            due_date: dueDate.toISOString() 
+        }]);
+        
         if (error) return { success: false, message: error.message };
         
         if (actionType === 'borrowing') {
