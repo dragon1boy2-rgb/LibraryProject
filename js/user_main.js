@@ -82,7 +82,7 @@ async function renderLibrary() {
         let badge = b.is_google ? '<span class="tag tag-purple">Gợi ý Online</span>' : (b.stock > 0 ? '<span class="tag tag-blue">Sẵn sàng</span>' : '<span class="tag tag-red">Hết hàng</span>');
         const isFav = favorites.some(f => f.id === b.id);
         const heartClass = isFav ? 'fas fa-heart active' : 'far fa-heart';
-        grid.innerHTML += `<div class="book-item" onclick="openDetail('${b.id}')" style="display:flex; flex-direction:column; height: 100%;"><div class="heart-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${b.id}')"><i class="${heartClass}"></i></div><img src="${imgUrl}" class="book-img" style="width: 100%; height: 240px; object-fit: cover;"><div class="book-info" style="flex:1; display:flex; flex-direction:column;"><h4 style="font-size:15px; margin-bottom:5px; color:#333; font-weight:700; line-height:1.4; max-height:42px; overflow:hidden;">${b.name}</h4><p style="font-size:13px; color:#888; margin-bottom:8px;">${b.author}</p><div style="margin-top:auto;">${badge}</div></div></div>`;
+        grid.innerHTML += `<div class="book-item" onclick="openDetail('${b.id}')" style="display:flex; flex-direction:column; height: 100%;"><div class="heart-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${b.id}')"><i class="fas fa-heart ${isFav ? 'active' : ''}"></i></div><img src="${imgUrl}" class="book-img" style="width: 100%; height: 240px; object-fit: cover;"><div class="book-info" style="flex:1; display:flex; flex-direction:column;"><h4 style="font-size:15px; margin-bottom:5px; color:#333; font-weight:700; line-height:1.4; max-height:42px; overflow:hidden;">${b.name}</h4><p style="font-size:13px; color:#888; margin-bottom:8px;">${b.author}</p><div style="margin-top:auto;">${badge}</div></div></div>`;
     });
     updatePaginationUI('lib', totalPages, currentLibPage);
 }
@@ -465,3 +465,28 @@ function renderFavorites() {
         grid.innerHTML += `<div class="book-item" onclick="openDetail('${b.id}')" style="display:flex; flex-direction:column; height: 100%;"><div class="heart-btn active" onclick="toggleFavorite(event, '${b.id}')"><i class="fas fa-heart active"></i></div><img src="${imgUrl}" class="book-img" style="width: 100%; height: 240px; object-fit: cover;"><div class="book-info" style="flex:1; display:flex; flex-direction:column;"><h4 style="font-size:15px; margin-bottom:5px; color:#333; font-weight:700; line-height:1.4; max-height:42px; overflow:hidden;">${b.name}</h4><p style="font-size:13px; color:#888; margin-bottom:8px;">${b.author}</p><div style="margin-top:auto;">${badge}</div></div></div>`;
     });
 }
+
+// --- [NEW] LOGIC DARK MODE ---
+
+// 1. Hàm bật/tắt khi gạt nút
+function toggleTheme(checkbox) {
+    if (checkbox.checked) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('dlib_theme', 'dark');
+    } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('dlib_theme', 'light');
+    }
+}
+
+// 2. Tự động kiểm tra trạng thái khi tải trang
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('dlib_theme');
+    const checkbox = document.getElementById('darkModeCheckbox');
+    
+    // Nếu đã lưu là dark, thì bật class và gạt nút sang phải
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        if(checkbox) checkbox.checked = true;
+    }
+});

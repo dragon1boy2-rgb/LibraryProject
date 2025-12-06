@@ -32,7 +32,6 @@ ul { list-style: none; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
 /* --- HEADER --- */
-/* --- HEADER --- */
 .site-header {
     background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
     color: white; 
@@ -103,14 +102,7 @@ ul { list-style: none; }
     padding: 0;
 }
 
-/* Các phần còn lại giữ nguyên */
-
 /* --- TOP NAV (FIX: KHÔNG XUỐNG DÒNG) --- */
-.top-nav ul { 
-    display: flex; 
-    gap: 5px; 
-    align-items: center;
-}
 .top-nav li { 
     padding: 10px 15px; 
     border-radius: 4px; 
@@ -141,7 +133,7 @@ ul { list-style: none; }
 .user-dropdown ul { list-style: none; padding: 0; margin: 0; }
 .user-dropdown ul li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #333; font-size: 14px; font-weight: 500; transition: 0.2s; text-decoration: none; }
 .user-dropdown ul li a i { width: 18px; text-align: center; color: #888; }
-.user-dropdown ul li a:hover { background-color: #f5f7fa; color: var(--primary-color); }
+.user-dropdown ul li a:hover { background-color: #f5f5f5; color: var(--primary-color); }
 .user-dropdown ul li a:hover i { color: var(--primary-color); }
 .user-dropdown .divider { height: 1px; background-color: #eee; margin: 4px 0; }
 
@@ -324,7 +316,6 @@ ul { list-style: none; }
     #library-grid, #resource-grid, #favorites-grid { grid-template-columns: 1fr !important; }
 }
 
-/* ... (Giữ nguyên phần Profile & Card Register) ... */
 .profile-layout { display: flex; gap: 24px; align-items: flex-start; margin-top: 20px; }
 .profile-sidebar { width: 280px; flex-shrink: 0; }
 .profile-avatar-container { width: 100%; margin-bottom: 16px; }
@@ -376,9 +367,6 @@ ul { list-style: none; }
 .lc-barcode { height: 40px; width: 200px; background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px, #000 4px, #000 5px, #fff 5px, #fff 8px); border: 1px solid #eee; }
 .lc-code-num { font-family: monospace; font-size: 14px; text-align: center; margin-top: 4px; font-weight: bold; }
 
-/* ================================
-   NEW: Nút Trái Tim & Yêu Thích
-   ================================ */
 .book-item {
     position: relative; /* Để trái tim định vị theo khung sách */
 }
@@ -406,12 +394,10 @@ ul { list-style: none; }
     transform: scale(1.1);
 }
 
-/* Khi đã yêu thích (có class active) */
 .heart-btn.active {
     color: #ff4d4f; /* Màu đỏ */
 }
 
-/* Hiệu ứng nảy khi bấm */
 @keyframes heartPulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.3); }
@@ -436,4 +422,113 @@ ul { list-style: none; }
 .btn-buy-lg:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+}
+
+/* --- [NEW] CSS CHO NÚT SWITCH GẠT --- */
+.switch-mode {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+    margin-left: 10px;
+}
+
+.switch-mode input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider-mode {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider-mode:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+/* Khi bật (Checked) */
+.switch-mode input:checked + .slider-mode {
+    background-color: #1890ff; /* Màu xanh khi bật */
+}
+
+.switch-mode input:checked + .slider-mode:before {
+    transform: translateX(14px);
+}
+
+/* --- [NEW] GIAO DIỆN DARK MODE (FIX: Không đổi màu Header/Footer) --- */
+body.dark-mode {
+    background-color: #121212 !important;
+    color: #e4e6eb !important;
+}
+
+/* Đổi màu các thành phần chính sang tối (ĐÃ XÓA .container) */
+body.dark-mode .sidebar, 
+body.dark-mode .main-content .top-bar,
+body.dark-mode .stat-card,
+body.dark-mode .book-item,
+body.dark-mode .news-item,
+body.dark-mode .summary-card,
+body.dark-mode .form-panel,
+body.dark-mode .modal-box,
+body.dark-mode .library-card,
+body.dark-mode .search-bar-modern,
+body.dark-mode .modern-table,
+body.dark-mode .toolbar-container,
+body.dark-mode .user-dropdown {
+    background-color: #242526 !important; /* Xám đậm */
+    color: #e4e6eb !important;
+    border-color: #3e4042 !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
+}
+
+/* Chữ tiêu đề và icon chuyển sang trắng */
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, 
+body.dark-mode strong, body.dark-mode .brand span, body.dark-mode i {
+    color: #e4e6eb !important;
+}
+
+/* Input, Select và Dropdown Item */
+body.dark-mode input, body.dark-mode select, body.dark-mode textarea {
+    background-color: #3a3b3c !important;
+    border: 1px solid #555 !important;
+    color: white !important;
+}
+body.dark-mode .user-dropdown ul li a {
+    color: #e4e6eb !important;
+}
+body.dark-mode .user-dropdown ul li a:hover {
+    background-color: #3a3b3c !important;
+}
+
+/* BẢO VỆ HEADER VÀ FOOTER GIỮ NGUYÊN MÀU */
+body.dark-mode .site-header {
+    background: linear-gradient(to right, var(--secondary-color), var(--primary-color)) !important;
+}
+body.dark-mode .site-footer {
+    background: white !important;
+    color: #888 !important; /* Giữ chữ màu xám để đọc được trên nền trắng */
+}
+/* Ép các thẻ p trong footer giữ màu xám */
+body.dark-mode .site-footer p {
+    color: #888 !important;
+}
+/* Đảm bảo container bên trong header/footer trong suốt */
+body.dark-mode .site-header .container,
+body.dark-mode .site-footer .container {
+    background-color: transparent !important;
+    box-shadow: none !important;
 }
