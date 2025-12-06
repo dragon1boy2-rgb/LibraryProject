@@ -32,16 +32,78 @@ ul { list-style: none; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
 /* --- HEADER --- */
+/* --- HEADER --- */
 .site-header {
     background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
-    color: white; padding: 0; position: sticky; top: 0; z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    color: white; 
+    padding: 0; 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15); /* Tăng bóng đổ cho đẹp hơn */
 }
-.header-content { display: flex; justify-content: space-between; align-items: center; height: 70px; }
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand i { color: var(--accent-color); font-size: 28px; }
-.brand-text h1 { font-size: 20px; margin: 0; font-weight: 700; letter-spacing: 1px; }
-.brand-text span { font-size: 11px; opacity: 0.8; display: block; }
+
+.header-content { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    height: 70px; 
+    gap: 20px; /* Tạo khoảng cách an toàn giữa các phần */
+}
+
+/* --- FIX LỖI LOGO BỊ VỠ --- */
+.brand { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    flex-shrink: 0; /* QUAN TRỌNG: Ngăn không cho logo bị co lại */
+    min-width: max-content; /* Đảm bảo logo luôn đủ chiều rộng */
+}
+
+.brand i { 
+    color: var(--accent-color); 
+    font-size: 32px; /* Tăng kích thước icon sách lên chút */
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.brand-text h1 { 
+    font-size: 22px; 
+    margin: 0; 
+    font-weight: 800; 
+    letter-spacing: 1px; 
+    line-height: 1.1;
+}
+
+.brand-text span { 
+    font-size: 12px; 
+    opacity: 0.9; 
+    display: block; 
+    white-space: nowrap; /* QUAN TRỌNG: Giữ dòng chữ slogan luôn thẳng hàng, không xuống dòng */
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* --- CĂN CHỈNH MENU --- */
+.top-nav {
+    flex: 1; /* Cho phép menu chiếm không gian còn lại */
+    display: flex;
+    justify-content: center; /* Căn giữa menu */
+}
+
+.top-nav ul { 
+    display: flex; 
+    gap: 5px; 
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* Các phần còn lại giữ nguyên */
 
 /* --- TOP NAV (FIX: KHÔNG XUỐNG DÒNG) --- */
 .top-nav ul { 
