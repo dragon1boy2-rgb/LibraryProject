@@ -2,19 +2,17 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản Lý Tài Nguyên Số</title>
+    <title>Quản Lý Tài Nguyên Số - LM</title>
     <link rel="stylesheet" href="css/admin_books.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="wrapper">
         <nav class="sidebar">
-            <div class="brand"><i class="fas fa-book-reader"></i> <span>DLib K12</span></div>
+            <div class="brand"><i class="fas fa-book-reader"></i> <span>LM</span></div>
             <ul class="menu">
                 <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                
                 <li class="active"><a href="admin_resources.html"><i class="fas fa-database"></i> Quản lý tài nguyên số</a></li>
-
                 <li><a href="admin_books.html"><i class="fas fa-book"></i> Quản lý Sách</a></li>
                 <li><a href="admin_loans.html"><i class="fas fa-clipboard-list"></i> Quản lý Mượn Trả</a></li>
                 <li><a href="admin_users.html"><i class="fas fa-users"></i> Quản lý Tài khoản</a></li>
@@ -33,12 +31,10 @@
                     <i class="fas fa-search"></i>
                     <input type="text" id="search-input" placeholder="Tìm kiếm tài liệu..." onkeyup="handleSearch()">
                 </div>
-                
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-add-new" style="background: #faad14;" onclick="bulkImportEbooks()">
                         <i class="fas fa-bolt"></i> Auto Import
                     </button>
-
                     <button class="btn-add-new" onclick="openModal()">
                         <i class="fas fa-cloud-upload-alt"></i> Upload Tài Liệu
                     </button>
@@ -49,12 +45,7 @@
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Tên Tài Liệu</th>
-                            <th>Loại</th>
-                            <th>Dung Lượng</th>
-                            <th>Ngày Tạo</th>
-                            <th>Hành Động</th>
+                            <th>ID</th><th>Tên Tài Liệu</th><th>Loại</th><th>Dung Lượng</th><th>Ngày Tạo</th><th>Hành Động</th>
                         </tr>
                     </thead>
                     <tbody id="resource-list"></tbody>
@@ -71,12 +62,7 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="r-id">
-                
-                <div class="form-group">
-                    <label>Tên tài liệu</label>
-                    <input type="text" id="r-name" placeholder="Ví dụ: Giáo trình Toán Cao Cấp">
-                </div>
-
+                <div class="form-group"><label>Tên tài liệu</label><input type="text" id="r-name" placeholder="Ví dụ: Giáo trình Toán Cao Cấp"></div>
                 <div class="form-group">
                     <label>Loại định dạng</label>
                     <select id="r-type" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
@@ -86,16 +72,8 @@
                         <option value="Podcast">Podcast (Âm thanh)</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>Dung lượng / Thời lượng</label>
-                    <input type="text" id="r-size" placeholder="Ví dụ: 5MB hoặc 15 phút">
-                </div>
-
-                <div class="form-group">
-                    <label>Đường dẫn tài liệu (Link Online / Google Drive)</label>
-                    <input type="text" id="r-link" placeholder="Nhập link PDF, YouTube hoặc link Drive...">
-                </div>
+                <div class="form-group"><label>Dung lượng / Thời lượng</label><input type="text" id="r-size" placeholder="Ví dụ: 5MB hoặc 15 phút"></div>
+                <div class="form-group"><label>Đường dẫn tài liệu</label><input type="text" id="r-link" placeholder="Nhập link PDF, YouTube hoặc link Drive..."></div>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeModal()">Hủy</button>

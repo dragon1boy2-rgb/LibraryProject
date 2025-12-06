@@ -2,22 +2,32 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản Lý Mượn Trả Thông Minh</title>
+    <title>Quản Lý Phiếu Mượn/Trả - LM</title>
     <link rel="stylesheet" href="css/admin_books.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .date-filter-group {
-            display: flex; align-items: center; gap: 5px;
-            background: #fff; padding: 5px 10px; border-radius: 20px; border: 1px solid #ddd;
-        }
-        .date-filter-group input { border: none; outline: none; font-size: 13px; color: #555; }
-        .date-filter-group span { font-size: 12px; color: #888; }
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .tab-btn { padding: 10px 20px; border: none; background: none; font-weight: bold; color: #888; cursor: pointer; font-size: 16px; border-bottom: 3px solid transparent; transition: 0.3s; }
+        .tab-btn.active { color: #1890ff; border-bottom-color: #1890ff; }
+        .form-section { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: none; }
+        .form-section.active { display: block; }
+        .form-row { margin-bottom: 20px; }
+        .form-row label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .form-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: #f9f9f9; }
+        .form-input:focus { outline: none; border-color: #1890ff; background: #fff; }
+        .btn-action { padding: 10px 25px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; margin-top: 10px; }
+        .btn-blue { background: #1890ff; }
+        .btn-green { background: #28a745; }
+        .book-list-preview { margin-top: 10px; border: 1px solid #eee; padding: 10px; border-radius: 4px; min-height: 50px; }
+        .selected-tag { display: inline-block; background: #e6f7ff; color: #1890ff; padding: 5px 10px; border-radius: 15px; margin: 2px; font-size: 13px; border: 1px solid #91d5ff; }
+        .loan-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+        .loan-card { background: white; padding: 20px; border-radius: 8px; border-left: 5px solid #1890ff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
     <div class="wrapper">
         <nav class="sidebar">
-            <div class="brand"><i class="fas fa-book-reader"></i> <span>DLib K12</span></div>
+            <div class="brand"><i class="fas fa-book-reader"></i> <span>LM</span></div>
             <ul class="menu">
                 <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 <li><a href="admin_resources.html"><i class="fas fa-database"></i> Quản lý tài nguyên số</a></li>
@@ -30,55 +40,62 @@
 
         <main class="main-content">
             <div class="top-bar">
-                <h2>Theo Dõi Mượn Trả</h2>
+                <h2>Quản lý Nghiệp Vụ</h2>
                 <div class="user-profile">Admin <img src="https://via.placeholder.com/40"></div>
             </div>
 
-            <div class="toolbar" style="flex-wrap: wrap; gap: 10px;">
-                <div class="search-group">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Tìm người, sách..." onkeyup="handleSearch()">
-                </div>
-                
-                <select id="filter-status" onchange="handleSearch()" style="padding: 8px; border-radius: 20px; border: 1px solid #ddd; outline: none;">
-                    <option value="all">Tất cả trạng thái</option>
-                    <option value="borrowing">Đang mượn</option>
-                    <option value="overdue">⚠️ Quá hạn</option>
-                    <option value="returned">Đã trả</option>
-                    <option value="reserved">Đặt trước</option>
-                </select>
-
-                <div class="date-filter-group">
-                    <span>Từ:</span> <input type="date" id="start-date" onchange="handleSearch()">
-                    <span>Đến:</span> <input type="date" id="end-date" onchange="handleSearch()">
-                </div>
-
-                <div style="margin-left: auto;">
-                    <button class="btn-add-new" style="background: #217346;" onclick="exportToExcel()">
-                        <i class="fas fa-file-excel"></i> Xuất Excel
-                    </button>
-                </div>
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchSection('borrow')">Quản lý Phiếu Mượn</button>
+                <button class="tab-btn" onclick="switchSection('return')">Quản lý Phiếu Trả</button>
             </div>
 
-            <div class="table-container">
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th><th>Người Mượn</th><th>Tên Sách</th>
-                            <th>Ngày Mượn / Hạn</th><th>Trạng Thái</th><th>Tiền Phạt</th><th>Hành Động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="loan-list"></tbody>
-                </table>
+            <div id="section-borrow" class="form-section active">
+                <h3 style="margin-bottom: 20px;">Tạo Phiếu Mượn Mới</h3>
+                <div class="form-row"><label>Người Mượn (Chọn User)</label><select id="b-user" class="form-input"></select></div>
+                <div class="form-row"><label>Mã Phiếu (Tự động)</label><input type="text" id="b-id" class="form-input" placeholder="Auto-generated" disabled></div>
+                <div style="display: flex; gap: 20px;">
+                    <div class="form-row" style="flex: 1;"><label>Ngày Mượn</label><input type="date" id="b-date" class="form-input"></div>
+                    <div class="form-row" style="flex: 1;"><label>Hạn Trả</label><input type="date" id="b-due" class="form-input"></div>
+                </div>
+                <div class="form-row"><label>Số Sách Mượn</label><input type="number" id="b-count" class="form-input" value="0" readonly></div>
+                <div class="form-row">
+                    <button class="btn-action btn-green" onclick="openBookSelector()">Chọn Sách</button>
+                    <div id="b-selected-books" class="book-list-preview"><span style="color:#999; font-style:italic;">Chưa chọn sách nào...</span></div>
+                </div>
+                <button class="btn-action btn-blue" onclick="createLoanSlip()">Thêm Phiếu Mượn</button>
+                <h4 style="margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 10px;">Danh sách Phiếu Mượn Gần Đây</h4>
+                <div id="loan-card-list" class="loan-cards"></div>
             </div>
-            
-            <div class="pagination-container" id="pagination-container">
-                <button class="btn-page" onclick="changePage(-1)" id="btn-prev"><i class="fas fa-chevron-left"></i></button>
-                <div id="pagination-numbers" style="display: flex; gap: 5px;"></div>
-                <button class="btn-page" onclick="changePage(1)" id="btn-next"><i class="fas fa-chevron-right"></i></button>
+
+            <div id="section-return" class="form-section">
+                <h3 style="margin-bottom: 20px;">Tạo Phiếu Trả</h3>
+                <div class="form-row"><label>Phiếu Mượn ID</label><select id="r-loan-id" class="form-input"><option value="">-- Chọn phiếu mượn --</option></select></div>
+                <div class="form-row"><label>Ngày Trả</label><input type="date" id="r-date" class="form-input"></div>
+                <button class="btn-action btn-blue" onclick="createReturnSlip()">Thêm Phiếu Trả</button>
+                <div style="margin-top: 30px;">
+                    <table class="custom-table">
+                        <thead><tr><th>ID</th><th>Thông tin sách trả</th><th>Ngày Trả</th><th>Hành Động</th></tr></thead>
+                        <tbody id="return-table-body"></tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
+
+    <div class="modal-overlay" id="bookSelectorModal">
+        <div class="modal-box" style="width: 600px;">
+            <div class="modal-header"><h3>Chọn Sách</h3><span class="close-modal" onclick="closeBookSelector()">&times;</span></div>
+            <div class="modal-body" style="grid-template-columns: 1fr;">
+                <input type="text" id="search-book-modal" placeholder="Tìm tên sách..." onkeyup="filterBooksInModal()" class="form-input" style="margin-bottom: 10px;">
+                <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; padding: 10px;" id="modal-book-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeBookSelector()">Đóng</button>
+                <button class="btn-save" onclick="confirmBookSelection()">Xác Nhận</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/data.js"></script>
     <script src="js/admin_loans.js"></script>

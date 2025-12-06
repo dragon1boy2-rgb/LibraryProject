@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản Lý Sách - DLib K12</title>
+    <title>Quản Lý Sách - LM</title>
     <link rel="stylesheet" href="css/admin_books.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
@@ -10,7 +10,7 @@
 <body>
     <div class="wrapper">
         <nav class="sidebar">
-            <div class="brand"><i class="fas fa-book-reader"></i> <span>DLib K12</span></div>
+            <div class="brand"><i class="fas fa-book-reader"></i> <span>LM</span></div>
             <ul class="menu">
                 <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 <li><a href="admin_resources.html"><i class="fas fa-database"></i> Quản lý tài nguyên số</a></li>
@@ -64,9 +64,11 @@
                 </table>
             </div>
 
-            <div class="pagination-container">
+            <div class="pagination-container" id="pagination-numbers">
+                </div>
+            <div class="pagination-container" style="justify-content: center; display:flex; gap: 5px;">
                 <button class="btn-page" onclick="changePage(-1)" id="btn-prev"><i class="fas fa-chevron-left"></i></button>
-                <div id="pagination-numbers" style="display: flex; gap: 5px;"></div>
+                <div id="pagination-numbers-inner" style="display: flex; gap: 5px;"></div>
                 <button class="btn-page" onclick="changePage(1)" id="btn-next"><i class="fas fa-chevron-right"></i></button>
             </div>
         </main>
@@ -82,32 +84,26 @@
             <div class="modal-body">
                 <div class="image-upload-container">
                     <label style="font-weight: 600; color: #444;">Ảnh bìa sách</label>
-                    
                     <div class="upload-placeholder" id="upload-zone">
                         <div id="upload-instruction" style="text-align:center;">
                             <i class="fas fa-cloud-upload-alt"></i>
                             <br><span>Nhấn để chọn ảnh</span>
                         </div>
-
                         <div id="cropper-container" style="display: none; width: 100%; height: 100%;">
                             <img id="cropper-image" src="">
                         </div>
-
                         <div id="final-preview-container" style="display: none; width: 100%; height: 100%;">
                             <img id="image-preview" src="" style="width: 100%; height: 100%; object-fit: contain;">
                         </div>
                     </div>
-
                     <input type="file" id="book-image-file" accept="image/*">
                     <input type="hidden" id="book-image-base64">
-
                     <div id="cropper-actions" style="display: none; justify-content: space-between;">
                         <button class="btn-cancel" onclick="event.stopPropagation(); cancelCrop()" style="font-size: 13px; padding: 6px 15px;">Hủy bỏ</button>
                         <button class="btn-save" onclick="event.stopPropagation(); performCrop()" style="font-size: 13px; padding: 6px 15px; background: #52c41a;">
                             <i class="fas fa-crop"></i> Cắt & Lưu
                         </button>
                     </div>
-
                     <button id="btn-reselect" onclick="document.getElementById('book-image-file').click()" style="display:none; width:100%; padding: 8px; border:1px dashed #1890ff; background: #f0f5ff; color:#1890ff; cursor:pointer; border-radius:4px;">
                         <i class="fas fa-sync"></i> Chọn ảnh khác
                     </button>
@@ -115,31 +111,11 @@
 
                 <div class="info-container">
                     <input type="hidden" id="book-id">
-                    
-                    <div class="form-group">
-                        <label>Tên sách <span style="color:red">*</span></label>
-                        <input type="text" id="book-name" placeholder="Nhập tên sách đầy đủ...">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Tác giả <span style="color:red">*</span></label>
-                        <input type="text" id="book-author" placeholder="Tên tác giả...">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Nhà xuất bản</label>
-                        <input type="text" id="book-publisher" placeholder="Ví dụ: NXB Kim Đồng">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Số lượng kho</label>
-                        <input type="number" id="book-stock" placeholder="10">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Link đọc thử (PDF/Online)</label>
-                        <input type="text" id="book-preview" placeholder="Nhập link PDF hoặc Google Books...">
-                    </div>
+                    <div class="form-group"><label>Tên sách <span style="color:red">*</span></label><input type="text" id="book-name" placeholder="Nhập tên sách đầy đủ..."></div>
+                    <div class="form-group"><label>Tác giả <span style="color:red">*</span></label><input type="text" id="book-author" placeholder="Tên tác giả..."></div>
+                    <div class="form-group"><label>Nhà xuất bản</label><input type="text" id="book-publisher" placeholder="Ví dụ: NXB Kim Đồng"></div>
+                    <div class="form-group"><label>Số lượng kho</label><input type="number" id="book-stock" placeholder="10"></div>
+                    <div class="form-group"><label>Link đọc thử (PDF/Online)</label><input type="text" id="book-preview" placeholder="Nhập link PDF hoặc Google Books..."></div>
                 </div>
             </div>
 

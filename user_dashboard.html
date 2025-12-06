@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cổng Thông Tin Thư Viện Số - DLib K12</title>
+    <title>Cổng Thông Tin Thư Viện Số - LM</title>
     <link rel="stylesheet" href="css/user_home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
             <div class="brand">
                 <i class="fas fa-book-reader fa-lg"></i>
                 <div class="brand-text">
-                    <h1>DLIB K12</h1>
+                    <h1>LM</h1>
                     <span>Thư viện tri thức thông minh</span>
                 </div>
             </div>
@@ -41,19 +41,12 @@
                     <img src="https://via.placeholder.com/40" alt="Avatar" id="header-avatar">
                     <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 8px; color: white;"></i>
                 </div>
-                
                 <div class="user-dropdown" id="userDropdown">
                     <ul>
-                        <li onclick="switchTab('profile');">
-                            <a href="#"><i class="fas fa-user-circle"></i> Hồ sơ cá nhân</a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fas fa-cog"></i> Cài đặt</a>
-                        </li>
+                        <li onclick="switchTab('profile');"><a href="#"><i class="fas fa-user-circle"></i> Hồ sơ cá nhân</a></li>
+                        <li><a href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
                         <li class="divider"></li>
-                        <li onclick="DB.logout()">
-                            <a href="#" style="color: #ff4d4f;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
-                        </li>
+                        <li onclick="DB.logout()"><a href="#" style="color: #ff4d4f;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                     </ul>
                 </div>
             </div>
@@ -73,55 +66,25 @@
 
     <div class="wrapper container">
         <main class="main-content">
-            
             <div id="tab-home" class="tab-section active">
-                <div class="section-title">
-                    <h3><i class="fas fa-chart-pie"></i> Tổng Quan Của Bạn</h3>
-                </div>
+                <div class="section-title"><h3><i class="fas fa-chart-pie"></i> Tổng Quan Của Bạn</h3></div>
                 <div class="stats-row">
-                    <div class="stat-card blue">
-                        <div class="icon-box"><i class="fas fa-book-reader"></i></div>
-                        <div class="stat-info"><h2 id="stat-borrowing">0</h2><p>Đang mượn</p></div>
-                    </div>
-                    <div class="stat-card orange">
-                        <div class="icon-box"><i class="fas fa-bookmark"></i></div>
-                        <div class="stat-info"><h2 id="stat-reserved">0</h2><p>Đang đặt trước</p></div>
-                    </div>
-                    <div class="stat-card red">
-                        <div class="icon-box"><i class="fas fa-exclamation-circle"></i></div>
-                        <div class="stat-info"><h2 id="stat-fine">0 đ</h2><p>Tiền phạt</p></div>
-                    </div>
+                    <div class="stat-card blue"><div class="icon-box"><i class="fas fa-book-reader"></i></div><div class="stat-info"><h2 id="stat-borrowing">0</h2><p>Đang mượn</p></div></div>
+                    <div class="stat-card orange"><div class="icon-box"><i class="fas fa-bookmark"></i></div><div class="stat-info"><h2 id="stat-reserved">0</h2><p>Đang đặt trước</p></div></div>
+                    <div class="stat-card red"><div class="icon-box"><i class="fas fa-exclamation-circle"></i></div><div class="stat-info"><h2 id="stat-fine">0 đ</h2><p>Tiền phạt</p></div></div>
                 </div>
                 <div class="news-panel">
                     <h3><i class="fas fa-bullhorn"></i> Tin Tức Thư Viện</h3>
                     <div class="news-grid">
-                        <div class="news-item">
-                            <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="News 1">
-                            <div class="news-content">
-                                <h4>Tuần lễ văn hóa đọc 2025</h4>
-                                <p>Chuỗi sự kiện triển lãm sách và giao lưu...</p>
-                                <a href="#">Xem chi tiết &rarr;</a>
-                            </div>
-                        </div>
-                        <div class="news-item">
-                            <img src="https://images.unsplash.com/photo-1495446815901-a7297e633e8d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="News 2">
-                            <div class="news-content">
-                                <h4>Bổ sung 500 đầu sách kỹ năng</h4>
-                                <p>Thư viện vừa nhập về lô sách mới cực hay...</p>
-                                <a href="#">Xem chi tiết &rarr;</a>
-                            </div>
-                        </div>
+                        <div class="news-item"><img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"><div class="news-content"><h4>Tuần lễ văn hóa đọc 2025</h4><p>Chuỗi sự kiện triển lãm sách và giao lưu...</p><a href="#">Xem chi tiết &rarr;</a></div></div>
+                        <div class="news-item"><img src="https://images.unsplash.com/photo-1495446815901-a7297e633e8d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"><div class="news-content"><h4>Bổ sung 500 đầu sách kỹ năng</h4><p>Thư viện vừa nhập về lô sách mới cực hay...</p><a href="#">Xem chi tiết &rarr;</a></div></div>
                     </div>
                 </div>
             </div>
 
             <div id="tab-library" class="tab-section">
                 <div class="toolbar-container">
-                    <div class="search-bar-modern">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="search-book" placeholder="Nhập tên sách, tác giả, chủ đề..." onkeyup="handleLibSearch()">
-                    </div>
-                    
+                    <div class="search-bar-modern"><i class="fas fa-search"></i><input type="text" id="search-book" placeholder="Nhập tên sách, tác giả, chủ đề..." onkeyup="handleLibSearch()"></div>
                     <div class="filter-tags" id="lib-filters">
                         <span class="tag active" onclick="filterLib('all', this)">Tất cả</span>
                         <span class="tag" onclick="filterLib('Sách mới', this)">Sách mới</span>
@@ -134,9 +97,7 @@
                         <span class="tag" onclick="filterLib('Truyện tranh', this)">Truyện tranh</span>
                     </div>
                 </div>
-                
                 <div id="library-grid" class="book-grid"></div>
-
                 <div class="pagination-container" id="lib-pagination" style="display:none;">
                     <button class="btn-page" onclick="changeLibPage(-1)" id="btn-lib-prev"><i class="fas fa-chevron-left"></i></button>
                     <div id="lib-page-numbers" style="display: flex; gap: 5px;"></div>
@@ -145,21 +106,14 @@
             </div>
 
             <div id="tab-favorites" class="tab-section">
-                <div class="section-title">
-                    <h3><i class="fas fa-heart"></i> Sách Đã Yêu Thích</h3>
-                </div>
+                <div class="section-title"><h3><i class="fas fa-heart"></i> Sách Đã Yêu Thích</h3></div>
                 <div id="favorites-grid" class="book-grid"></div>
             </div>
 
             <div id="tab-resources" class="tab-section">
-                <div class="section-title">
-                    <h3><i class="fas fa-cloud-download-alt"></i> Kho Tài Nguyên Số</h3>
-                </div>
+                <div class="section-title"><h3><i class="fas fa-cloud-download-alt"></i> Kho Tài Nguyên Số</h3></div>
                 <div class="toolbar-container">
-                    <div class="search-bar-modern">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="search-resource" placeholder="Tìm kiếm tài liệu, ebook, video..." onkeyup="handleResSearch()">
-                    </div>
+                    <div class="search-bar-modern"><i class="fas fa-search"></i><input type="text" id="search-resource" placeholder="Tìm kiếm tài liệu, ebook, video..." onkeyup="handleResSearch()"></div>
                     <div class="filter-tags" id="res-filters">
                         <span class="tag active" onclick="filterRes('all', this)">Tất cả</span>
                         <span class="tag" onclick="filterRes('PDF', this)">PDF</span>
@@ -167,9 +121,7 @@
                         <span class="tag" onclick="filterRes('Video', this)">Video</span>
                     </div>
                 </div>
-                
                 <div id="resource-grid" class="book-grid"></div>
-
                 <div class="pagination-container" id="res-pagination" style="display:none;">
                     <button class="btn-page" onclick="changeResPage(-1)" id="btn-res-prev"><i class="fas fa-chevron-left"></i></button>
                     <div id="res-page-numbers" style="display: flex; gap: 5px;"></div>
@@ -181,9 +133,7 @@
                 <div class="section-title"><h3><i class="fas fa-list-alt"></i> Danh Sách Mượn Trả</h3></div>
                 <div class="table-responsive">
                     <table class="modern-table">
-                        <thead>
-                            <tr><th>Tên Sách</th><th>Ngày Mượn</th><th>Hạn Trả</th><th>Trạng Thái</th><th>Thao Tác</th></tr>
-                        </thead>
+                        <thead><tr><th>Tên Sách</th><th>Ngày Mượn</th><th>Hạn Trả</th><th>Trạng Thái</th><th>Thao Tác</th></tr></thead>
                         <tbody id="loan-list"></tbody>
                     </table>
                 </div>
@@ -214,18 +164,11 @@
             <div id="tab-profile" class="tab-section">
                 <div class="profile-layout">
                     <div class="profile-sidebar">
-                        <div class="profile-avatar-container">
-                            <img src="https://via.placeholder.com/260" id="p-avatar" alt="Profile Picture">
-                        </div>
+                        <div class="profile-avatar-container"><img src="https://via.placeholder.com/260" id="p-avatar" alt="Profile Picture"></div>
                         <h1 class="p-fullname" id="p-fullname">Tên Người Dùng</h1>
                         <div class="p-username" id="p-username">username</div>
-                        
                         <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="handleAvatarUpload(this)">
-                        
-                        <button class="btn-edit-profile" onclick="document.getElementById('avatar-upload').click()">
-                            <i class="fas fa-camera"></i> Đổi ảnh đại diện
-                        </button>
-                        
+                        <button class="btn-edit-profile" onclick="document.getElementById('avatar-upload').click()"><i class="fas fa-camera"></i> Đổi ảnh đại diện</button>
                         <div class="p-meta">
                             <div><i class="fas fa-envelope"></i> <span id="p-email">email@example.com</span></div>
                             <div id="p-role-display"><i class="fas fa-id-card"></i> Sinh Viên</div>
@@ -234,14 +177,8 @@
                     </div>
                     <div class="profile-content">
                         <div class="stats-row" style="margin-bottom: 20px; grid-template-columns: 1fr 1fr;">
-                            <div class="stat-card blue" style="padding: 20px;">
-                                <div class="icon-box"><i class="fas fa-book"></i></div>
-                                <div class="stat-info"><h2 id="p-total-books">0</h2><p>Tổng sách đã mượn</p></div>
-                            </div>
-                            <div class="stat-card orange" style="padding: 20px;">
-                                <div class="icon-box"><i class="fas fa-coins"></i></div>
-                                <div class="stat-info"><h2 id="p-total-spent">0 đ</h2><p>Tổng chi tiêu</p></div>
-                            </div>
+                            <div class="stat-card blue" style="padding: 20px;"><div class="icon-box"><i class="fas fa-book"></i></div><div class="stat-info"><h2 id="p-total-books">0</h2><p>Tổng sách đã mượn</p></div></div>
+                            <div class="stat-card orange" style="padding: 20px;"><div class="icon-box"><i class="fas fa-coins"></i></div><div class="stat-info"><h2 id="p-total-spent">0 đ</h2><p>Tổng chi tiêu</p></div></div>
                         </div>
                         <div class="content-section">
                             <div class="section-header-git"><h3><i class="fas fa-history"></i> Sách đã mượn gần đây</h3></div>
@@ -266,19 +203,12 @@
             </div>
 
             <div id="tab-card-register" class="tab-section">
-                <div class="section-title">
-                    <h3><i class="fas fa-id-card"></i> Thẻ Thư Viện Của Bạn</h3>
-                </div>
-                
+                <div class="section-title"><h3><i class="fas fa-id-card"></i> Thẻ Thư Viện Của Bạn</h3></div>
                 <div class="card-register-container" id="register-form-container">
                     <div class="form-panel">
                         <h4>Đăng ký thẻ thư viện mới</h4>
                         <p style="color:#666; font-size:13px; margin-bottom:15px;">Mỗi tài khoản chỉ được đăng ký 1 thẻ duy nhất.</p>
-                        
-                        <div class="form-group">
-                            <label>Họ và Tên</label>
-                            <input type="text" id="reg-fullname" disabled style="background: #f5f5f5;">
-                        </div>
+                        <div class="form-group"><label>Họ và Tên</label><input type="text" id="reg-fullname" disabled style="background: #f5f5f5;"></div>
                         <div class="form-group">
                             <label>Vai trò</label>
                             <select id="reg-role" onchange="toggleRegIdInput()">
@@ -288,42 +218,16 @@
                                 <option value="other">Khác</option>
                             </select>
                         </div>
-                        <div class="form-group" id="reg-id-group">
-                            <label id="reg-id-label">Mã Sinh Viên</label>
-                            <input type="text" id="reg-code" placeholder="Nhập mã số...">
-                        </div>
-                        
+                        <div class="form-group" id="reg-id-group"><label id="reg-id-label">Mã Sinh Viên</label><input type="text" id="reg-code" placeholder="Nhập mã số..."></div>
                         <div style="margin-top: 20px;">
                             <label style="font-weight: bold; display: block; margin-bottom: 10px;">Chọn gói thẻ:</label>
                             <div class="pricing-options">
-                                <label class="price-card">
-                                    <input type="radio" name="card-plan" value="1m" checked>
-                                    <div class="pc-content">
-                                        <span class="pc-title">1 Tháng</span>
-                                        <span class="pc-price">50.000 đ</span>
-                                    </div>
-                                </label>
-                                <label class="price-card">
-                                    <input type="radio" name="card-plan" value="6m">
-                                    <div class="pc-content">
-                                        <span class="pc-title">6 Tháng</span>
-                                        <span class="pc-price">250.000 đ</span>
-                                        <span class="pc-badge">Tiết kiệm</span>
-                                    </div>
-                                </label>
-                                <label class="price-card">
-                                    <input type="radio" name="card-plan" value="1y">
-                                    <div class="pc-content">
-                                        <span class="pc-title">1 Năm</span>
-                                        <span class="pc-price">450.000 đ</span>
-                                        <span class="pc-badge" style="background: #ff4d4f;">Best Value</span>
-                                    </div>
-                                </label>
+                                <label class="price-card"><input type="radio" name="card-plan" value="1m" checked><div class="pc-content"><span class="pc-title">1 Tháng</span><span class="pc-price">50.000 đ</span></div></label>
+                                <label class="price-card"><input type="radio" name="card-plan" value="6m"><div class="pc-content"><span class="pc-title">6 Tháng</span><span class="pc-price">250.000 đ</span><span class="pc-badge">Tiết kiệm</span></div></label>
+                                <label class="price-card"><input type="radio" name="card-plan" value="1y"><div class="pc-content"><span class="pc-title">1 Năm</span><span class="pc-price">450.000 đ</span><span class="pc-badge" style="background: #ff4d4f;">Best Value</span></div></label>
                             </div>
                         </div>
-                        <button class="btn-checkout" onclick="handleAddCardToCart()" style="margin-top: 30px;">
-                            <i class="fas fa-cart-plus"></i> Thêm vào giỏ thanh toán
-                        </button>
+                        <button class="btn-checkout" onclick="handleAddCardToCart()" style="margin-top: 30px;"><i class="fas fa-cart-plus"></i> Thêm vào giỏ thanh toán</button>
                     </div>
                     <div class="info-panel">
                         <div style="background: #e6f7ff; padding: 20px; border-radius: 8px; border: 1px solid #91d5ff; color: #004e92;">
@@ -336,19 +240,12 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="my-card-display" style="display: none; justify-content: center; margin-top: 30px;">
-                    </div>
+                <div id="my-card-display" style="display: none; justify-content: center; margin-top: 30px;"></div>
             </div>
-
         </main>
     </div>
 
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2025 DLib K12 - Giải pháp thư viện thông minh.</p>
-        </div>
-    </footer>
+    <footer class="site-footer"><div class="container"><p>&copy; 2025 LM - Giải pháp thư viện thông minh.</p></div></footer>
 
     <div class="modal-overlay" id="detailModal">
         <div class="modal-box">
@@ -360,23 +257,12 @@
                     <p class="meta-info"><i class="fas fa-user-edit"></i> <span id="d-author">Tác giả</span> &nbsp;|&nbsp; <i class="fas fa-building"></i> <span id="d-pub">NXB</span></p>
                     <div class="stock-status" id="d-stock">Còn hàng</div>
                     <div class="desc-box"><h4>Giới thiệu nội dung:</h4><p id="d-desc">...</p></div>
-                    
                     <div class="action-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button id="btn-borrow" class="btn-primary-lg" style="background-color: #1890ff;">
-                            <i class="fas fa-book-reader"></i> Mượn (0đ)
-                        </button>
-                        
-                        <button id="btn-buy" class="btn-buy-lg">
-                            <i class="fas fa-shopping-cart"></i> Mua (50k)
-                        </button>
-
-                        <button id="btn-read-trial" class="btn-primary-lg" style="background-color: #722ed1; display: none;">
-                            <i class="fas fa-book-open"></i> Đọc thử
-                        </button>
-                        
+                        <button id="btn-borrow" class="btn-primary-lg" style="background-color: #1890ff;"><i class="fas fa-book-reader"></i> Mượn (0đ)</button>
+                        <button id="btn-buy" class="btn-buy-lg"><i class="fas fa-shopping-cart"></i> Mua (50k)</button>
+                        <button id="btn-read-trial" class="btn-primary-lg" style="background-color: #722ed1; display: none;"><i class="fas fa-book-open"></i> Đọc thử</button>
                         <button class="btn-secondary-lg" onclick="closeModal()">Đóng</button>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -384,13 +270,8 @@
 
     <div class="modal-overlay" id="avatarCropModal">
         <div class="modal-box" style="width: 500px;">
-            <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <h3>Chỉnh sửa ảnh đại diện</h3>
-                <span class="close-modal" onclick="closeAvatarModal()">&times;</span>
-            </div>
-            <div style="max-height: 400px; margin-bottom: 20px; border:1px solid #eee;">
-                <img id="avatar-cropper-img" style="max-width: 100%; display: block;">
-            </div>
+            <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3>Chỉnh sửa ảnh đại diện</h3><span class="close-modal" onclick="closeAvatarModal()">&times;</span></div>
+            <div style="max-height: 400px; margin-bottom: 20px; border:1px solid #eee;"><img id="avatar-cropper-img" style="max-width: 100%; display: block;"></div>
             <div style="text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
                 <button class="btn-secondary-lg" onclick="closeAvatarModal()" style="font-size: 14px; padding: 10px 20px;">Hủy</button>
                 <button class="btn-primary-lg" onclick="performAvatarCrop()" style="font-size: 14px; padding: 10px 20px;">Lưu Thay Đổi</button>
