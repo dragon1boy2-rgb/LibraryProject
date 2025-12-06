@@ -47,6 +47,7 @@
             <div class="tab-buttons">
                 <button class="tab-btn active" onclick="switchSection('borrow')">Quản lý Phiếu Mượn</button>
                 <button class="tab-btn" onclick="switchSection('return')">Quản lý Phiếu Trả</button>
+                <button class="tab-btn" onclick="switchSection('fine')">Quản lý Phiếu Phạt</button>
             </div>
 
             <div id="section-borrow" class="form-section active">
@@ -79,6 +80,26 @@
                     </table>
                 </div>
             </div>
+
+            <div id="section-fine" class="form-section">
+                <h3 style="margin-bottom: 20px; color: #d32f2f;"><i class="fas fa-exclamation-triangle"></i> Danh sách Quá Hạn & Chưa Nộp Phạt</h3>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID Phiếu</th>
+                                <th>Độc Giả</th>
+                                <th>Sách Mượn</th>
+                                <th>Quá Hạn (Ngày)</th>
+                                <th>Tiền Phạt (5k/ngày)</th>
+                                <th>Trạng Thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fine-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
         </main>
     </div>
 

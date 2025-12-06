@@ -32,9 +32,8 @@ const DB = {
         return error ? { success: false, message: error.message } : { success: true };
     },
 
-    // --- HÀM MỚI: TỰ ĐỘNG RESET MẬT KHẨU ---
+    // --- TỰ ĐỘNG RESET MẬT KHẨU ---
     resetPasswordAuto: async (username, email) => {
-        // 1. Kiểm tra xem có đúng người dùng này không (Khớp cả User lẫn Email)
         const { data: user, error } = await _supabase
             .from('users')
             .select('id, fullname')
@@ -46,10 +45,9 @@ const DB = {
             return { success: false, message: "Tên đăng nhập hoặc Email không chính xác!" };
         }
 
-        // 2. Sinh mật khẩu ngẫu nhiên (6 ký tự viết hoa)
+        // Sinh mật khẩu ngẫu nhiên (6 ký tự viết hoa)
         const newPass = Math.random().toString(36).slice(-6).toUpperCase();
 
-        // 3. Cập nhật mật khẩu mới này vào Database
         const { error: updateError } = await _supabase
             .from('users')
             .update({ password: newPass })
@@ -59,7 +57,6 @@ const DB = {
             return { success: false, message: "Lỗi hệ thống: " + updateError.message };
         }
 
-        // 4. Trả về thành công kèm mật khẩu mới để bên login.js gửi mail
         return { success: true, newPass: newPass, fullname: user.fullname || username };
     },
 
@@ -284,11 +281,16 @@ const DB = {
         return data || []; 
     },
     
-    // [FIX] Cập nhật hàm borrowBook để thêm ngày mượn
-    borrowBook: async (userId, bookId, actionType) => {
-        const borrowDate = new Date(); // Lấy ngày hiện tại
-        const dueDate = new Date(); 
-        dueDate.setDate(dueDate.getDate() + 14); // Hạn trả 14 ngày
+    // [FIXED] Hàm mượn sách đã có thêm borrow_date và hỗ trợ customDueDate
+    borrowBook: async (userId, bookId, actionType, customDueDate = null) => {
+        const borrowDate = new Date(); // Ngày mượn là hôm nay
+        let dueDate = new Date();
+
+        if (customDueDate) {
+            dueDate = new Date(customDueDate); // Dùng ngày do Test chọn
+        } else {
+            dueDate.setDate(dueDate.getDate() + 14); // Mặc định 14 ngày
+        }
 
         const { error } = await _supabase.from('loans').insert([{ 
             user_id: userId, 
@@ -313,6 +315,25 @@ const DB = {
         const { data: b } = await _supabase.from('books').select('stock').eq('id', bookId).single();
         if(b) await _supabase.from('books').update({ stock: b.stock + 1 }).eq('id', bookId);
         return true;
+    },
+
+    // --- XỬ LÝ PHẠT (MỚI) ---
+    payFine: async (loanId) => {
+        // Đánh dấu đã nộp phạt
+        const { error } = await _supabase.from('loans').update({ fine_paid: true }).eq('id', loanId);
+        return !error;
+    },
+
+    getOverdueLoans: async () => {
+        const { data } = await _supabase
+            .from('loans')
+            .select('*, books(name), users(username, fullname)')
+            .eq('status', 'borrowing')
+            .lt('due_date', new Date().toISOString());
+
+        if (!data) return [];
+        // Lọc những phiếu chưa nộp phạt (fine_paid là null hoặc false)
+        return data.filter(l => !l.fine_paid);
     },
 
     // ================= GỢI Ý ONLINE (TỰ ĐỘNG) =================
