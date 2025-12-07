@@ -275,7 +275,20 @@ function addBookToCart(book, actionType) {
     notify(`✅ Đã thêm "${book.name}" vào giỏ hàng (${label})!`, "success"); 
     closeModal();
 }
-function removeFromCart(index) { if(confirm("Xóa mục này khỏi giỏ?")) { cart.splice(index, 1); saveCart(); renderCart(); updateCartBadge(); } }
+function removeFromCart(index) { 
+    // [LOGIC MỚI] Chặn xóa nếu là phí phạt
+    if (cart[index] && cart[index].type === 'fine') {
+        notify("⚠️ Đây là khoản phí bắt buộc, bạn không thể xóa!", "error");
+        return;
+    }
+
+    if(confirm("Xóa mục này khỏi giỏ?")) { 
+        cart.splice(index, 1); 
+        saveCart(); 
+        renderCart(); 
+        updateCartBadge(); 
+    } 
+}
 function saveCart() { localStorage.setItem('dlib_cart_' + currentUser.id, JSON.stringify(cart)); }
 function updateCartBadge() { const el = document.getElementById('cart-badge'); if(el) el.innerText = cart.length; }
 
@@ -306,7 +319,14 @@ function renderCart() {
                 </div>`;
             typeLabel = '<span class="tag" style="background:#fff1f0; color:#f5222d; border:1px solid #ffa39e">Bắt buộc</span>';
         }
-        tbody.innerHTML += `<tr><td>${displayHTML}</td><td>${typeLabel}</td><td style="font-weight: 500; color: #333;">${item.price.toLocaleString()} đ</td><td><button class="btn-del" style="color:#ff4d4f; border-color:#ff4d4f;" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i> Xóa</button></td></tr>`;
+
+        // [LOGIC MỚI] Kiểm tra để hiển thị nút xóa hoặc nút khóa
+        let actionBtn = `<button class="btn-del" style="color:#ff4d4f; border-color:#ff4d4f;" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i> Xóa</button>`;
+        if (item.type === 'fine') {
+            actionBtn = `<button class="btn-del" style="background:#f5f5f5; color:#999; border-color:#ddd; cursor:not-allowed;" disabled title="Phí phạt là bắt buộc"><i class="fas fa-lock"></i> Bắt buộc</button>`;
+        }
+
+        tbody.innerHTML += `<tr><td>${displayHTML}</td><td>${typeLabel}</td><td style="font-weight: 500; color: #333;">${item.price.toLocaleString()} đ</td><td>${actionBtn}</td></tr>`;
     });
     subTotalEl.innerText = total.toLocaleString() + ' đ'; finalTotalEl.innerText = total.toLocaleString() + ' đ';
 }
