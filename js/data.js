@@ -45,7 +45,6 @@ const DB = {
             return { success: false, message: "Tên đăng nhập hoặc Email không chính xác!" };
         }
 
-        // Sinh mật khẩu ngẫu nhiên (6 ký tự viết hoa)
         const newPass = Math.random().toString(36).slice(-6).toUpperCase();
 
         const { error: updateError } = await _supabase
@@ -200,21 +199,17 @@ const DB = {
         return Object.values(counts).sort((a, b) => b.borrow_count - a.borrow_count).slice(0, 5);
     },
 
-    // [UPDATED] Hàm lấy thống kê User (Đã sửa lỗi hiển thị tiền phạt)
     getUserStats: async (userId) => {
         const { data } = await _supabase.from('loans').select('*').eq('user_id', userId);
         if(!data) return { borrowing: 0, reserved: 0, fine: 0 };
 
-        // --- Logic tính tiền phạt động (giống Admin & Cart) ---
         const today = new Date();
         const FINE_PER_DAY = 5000;
         let totalFine = 0;
 
         data.forEach(l => {
-            // Chỉ tính nếu đang mượn/quá hạn và CHƯA nộp phạt
             if ((l.status === 'borrowing' || l.status === 'overdue') && !l.fine_paid) {
                  const dueDate = new Date(l.due_date);
-                 // Nếu ngày hiện tại lớn hơn hạn trả -> Quá hạn
                  if (today > dueDate) {
                      const diffTime = Math.abs(today - dueDate);
                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
@@ -263,7 +258,35 @@ const DB = {
 
     addBook: async (item) => { const { error } = await _supabase.from('books').insert([item]); if(error) alert(error.message); else alert("Đã thêm sách vào kho!"); },
     updateBook: async (id, item) => { const { error } = await _supabase.from('books').update(item).eq('id', id); return !error; },
-    deleteBook: async (id) => { const { error } = await _supabase.from('books').delete().eq('id', id); if(error) alert(error.message); else alert("Đã xóa!"); },
+    
+    // [UPDATED] Xóa Sách với kiểm tra ràng buộc
+    deleteBook: async (id) => { 
+        // 1. Kiểm tra xem sách có đang được mượn không
+        const { data: activeLoans, error: checkError } = await _supabase
+            .from('loans')
+            .select('id')
+            .eq('book_id', id)
+            .in('status', ['borrowing', 'overdue', 'reserved']);
+
+        if (checkError) {
+            alert("Lỗi kiểm tra dữ liệu: " + checkError.message);
+            return;
+        }
+
+        if (activeLoans && activeLoans.length > 0) {
+            alert(`⚠️ KHÔNG THỂ XÓA!\nSách này đang được mượn hoặc đặt trước (${activeLoans.length} lượt).\nVui lòng thu hồi sách trước khi xóa.`);
+            return;
+        }
+
+        // 2. Nếu không ai mượn -> Xóa lịch sử cũ và xóa sách
+        if (confirm("Sách này hiện không có ai mượn.\nBạn có chắc muốn xóa vĩnh viễn (bao gồm cả lịch sử cũ)?")) {
+            await _supabase.from('loans').delete().eq('book_id', id); // Xóa history đã trả
+            const { error } = await _supabase.from('books').delete().eq('id', id); // Xóa sách
+            
+            if(error) alert(error.message); 
+            else alert("✅ Đã xóa sách thành công!"); 
+        }
+    },
 
     // ================= QUẢN LÝ TÀI NGUYÊN =================
     getResources: async () => { const { data } = await _supabase.from('resources').select('*').order('id', { ascending: false }); return data || []; },
@@ -280,7 +303,36 @@ const DB = {
         alert("Thành công!"); return true;
     },
     updateUser: async (id, updates) => { const { error } = await _supabase.from('users').update(updates).eq('id', id); return !error; },
-    deleteUser: async (id) => { const { error } = await _supabase.from('users').delete().eq('id', id); if(error) alert(error.message); else alert("Đã xóa!"); },
+    
+    // [UPDATED] Xóa User với kiểm tra ràng buộc
+    deleteUser: async (id) => { 
+        // 1. Kiểm tra User có đang mượn sách không
+        const { data: activeLoans, error: checkError } = await _supabase
+            .from('loans')
+            .select('id')
+            .eq('user_id', id)
+            .in('status', ['borrowing', 'overdue', 'reserved']);
+
+        if (checkError) {
+            alert("Lỗi kiểm tra dữ liệu: " + checkError.message);
+            return;
+        }
+
+        if (activeLoans && activeLoans.length > 0) {
+            alert(`⚠️ KHÔNG THỂ XÓA!\nTài khoản này đang mượn hoặc đặt trước ${activeLoans.length} cuốn sách.\nVui lòng yêu cầu trả sách trước khi xóa.`);
+            return;
+        }
+
+        // 2. Nếu không nợ sách -> Xóa sạch
+        if (confirm("Tài khoản này không đang nợ sách.\nBạn có chắc muốn xóa vĩnh viễn (gồm cả lịch sử)?")) {
+            await _supabase.from('loans').delete().eq('user_id', id); // Xóa history
+            await _supabase.from('access_logs').delete().eq('user_id', id); // Xóa log đăng nhập
+            const { error } = await _supabase.from('users').delete().eq('id', id); // Xóa User
+            
+            if(error) alert("Lỗi: " + error.message); 
+            else alert("✅ Đã xóa tài khoản thành công!"); 
+        }
+    },
 
     // ================= MƯỢN TRẢ =================
     getAllLoans: async () => { 
@@ -301,15 +353,14 @@ const DB = {
         return data || []; 
     },
     
-    // Hàm mượn sách có hỗ trợ customDueDate
     borrowBook: async (userId, bookId, actionType, customDueDate = null) => {
-        const borrowDate = new Date(); // Ngày mượn là hôm nay
+        const borrowDate = new Date(); 
         let dueDate = new Date();
 
         if (customDueDate) {
-            dueDate = new Date(customDueDate); // Dùng ngày do Test chọn
+            dueDate = new Date(customDueDate); 
         } else {
-            dueDate.setDate(dueDate.getDate() + 14); // Mặc định 14 ngày
+            dueDate.setDate(dueDate.getDate() + 14); 
         }
 
         const { error } = await _supabase.from('loans').insert([{ 
@@ -337,9 +388,7 @@ const DB = {
         return true;
     },
 
-    // --- XỬ LÝ PHẠT (MỚI) ---
     payFine: async (loanId) => {
-        // Đánh dấu đã nộp phạt
         const { error } = await _supabase.from('loans').update({ fine_paid: true }).eq('id', loanId);
         return !error;
     },
@@ -352,11 +401,10 @@ const DB = {
             .lt('due_date', new Date().toISOString());
 
         if (!data) return [];
-        // Lọc những phiếu chưa nộp phạt (fine_paid là null hoặc false)
         return data.filter(l => !l.fine_paid);
     },
 
-    // ================= GỢI Ý ONLINE (TỰ ĐỘNG) =================
+    // ================= GỢI Ý ONLINE =================
     searchOnlineEbooks: async (keyword = 'Sách Tiếng Việt') => {
         try {
             const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(keyword)}&filter=free-ebooks&printType=books&maxResults=21&langRestrict=vi`;
@@ -432,9 +480,7 @@ function toggleSubmenu(event) {
     parentLi.classList.toggle('open');
 }
 
-// ======================================================
-// HỆ THỐNG THÔNG BÁO THÔNG MINH (TOAST NOTIFICATION)
-// ======================================================
+// ================= NOTIFICATION (TOAST) =================
 const toastStyle = document.createElement('style');
 toastStyle.innerHTML = `
     #toast-container {
