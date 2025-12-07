@@ -200,13 +200,33 @@ const DB = {
         return Object.values(counts).sort((a, b) => b.borrow_count - a.borrow_count).slice(0, 5);
     },
 
+    // [UPDATED] Hàm lấy thống kê User (Đã sửa lỗi hiển thị tiền phạt)
     getUserStats: async (userId) => {
         const { data } = await _supabase.from('loans').select('*').eq('user_id', userId);
         if(!data) return { borrowing: 0, reserved: 0, fine: 0 };
+
+        // --- Logic tính tiền phạt động (giống Admin & Cart) ---
+        const today = new Date();
+        const FINE_PER_DAY = 5000;
+        let totalFine = 0;
+
+        data.forEach(l => {
+            // Chỉ tính nếu đang mượn/quá hạn và CHƯA nộp phạt
+            if ((l.status === 'borrowing' || l.status === 'overdue') && !l.fine_paid) {
+                 const dueDate = new Date(l.due_date);
+                 // Nếu ngày hiện tại lớn hơn hạn trả -> Quá hạn
+                 if (today > dueDate) {
+                     const diffTime = Math.abs(today - dueDate);
+                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                     totalFine += diffDays * FINE_PER_DAY;
+                 }
+            }
+        });
+
         return { 
             borrowing: data.filter(x => x.status === 'borrowing' || x.status === 'overdue').length, 
             reserved: data.filter(x => x.status === 'reserved').length, 
-            fine: data.reduce((sum, item) => sum + (item.fine_amount || 0), 0) 
+            fine: totalFine 
         };
     },
 
@@ -281,7 +301,7 @@ const DB = {
         return data || []; 
     },
     
-    // [FIXED] Hàm mượn sách đã có thêm borrow_date và hỗ trợ customDueDate
+    // Hàm mượn sách có hỗ trợ customDueDate
     borrowBook: async (userId, bookId, actionType, customDueDate = null) => {
         const borrowDate = new Date(); // Ngày mượn là hôm nay
         let dueDate = new Date();
@@ -397,7 +417,6 @@ const DB = {
         const videos = [
             { id: 'v1', name: 'Lịch sử Việt Nam: Nguồn cội', url: 'https://www.youtube.com/results?search_query=lich+su+viet+nam+nguon+coi', author: 'VTV7' },
             { id: 'v2', name: 'Kỹ năng tự học hiệu quả', url: 'https://www.youtube.com/results?search_query=ky+nang+tu+hoc+hieu+qua', author: 'Web5Ngay' },
-            // ... (các video khác nếu cần)
         ];
         return videos.map(v => ({
             id: v.id, name: v.name, author: v.author, type: 'Video Online', size: 'YouTube',

@@ -27,6 +27,8 @@ function switchTab(tabName, element) {
     if (element) element.classList.add('active');
     const heroSection = document.getElementById('hero-section');
     if (heroSection) heroSection.style.display = (tabName === 'home') ? 'flex' : 'none';
+    
+    // Refresh dữ liệu khi chuyển tab
     if(tabName === 'library') renderLibrary();
     if(tabName === 'favorites') renderFavorites();
     if(tabName === 'resources') renderResources();
@@ -38,6 +40,7 @@ function switchTab(tabName, element) {
 }
 
 async function loadStats() {
+    // Gọi hàm thống kê (đã được cập nhật trong data.js để tính tiền phạt chính xác)
     const stats = await DB.getUserStats(currentUser.id);
     document.getElementById('stat-borrowing').innerText = stats.borrowing;
     document.getElementById('stat-reserved').innerText = stats.reserved;
@@ -177,7 +180,7 @@ function openDetail(id) {
     const linkDoc = book.preview_link || (book.is_google ? book.preview_link : null);
     if (linkDoc && linkDoc.trim() !== "") { btnRead.style.display = 'inline-block'; btnRead.onclick = () => window.open(linkDoc, '_blank'); } else { btnRead.style.display = 'none'; }
     
-    // [NEW] Set ngày trả mặc định (14 ngày sau) cho ô test phạt
+    // Set ngày trả mặc định (14 ngày sau) cho ô test phạt
     const defaultDate = new Date();
     defaultDate.setDate(defaultDate.getDate() + 14);
     document.getElementById('d-due-date').value = defaultDate.toISOString().split('T')[0];
@@ -262,13 +265,13 @@ function addBookToCart(book, actionType) {
     
     if(exists) { notify(`Sách này đã có trong giỏ (${label})!`, "error"); return; }
     
-    // [NEW] Lấy customDueDate từ input trong modal
+    // Lấy customDueDate từ input trong modal để tạo đơn hàng
     const customDueDate = document.getElementById('d-due-date').value;
 
     const item = { 
         type: 'book', 
         action: actionType, 
-        data: { ...book, customDueDate: customDueDate }, // Lưu thêm customDueDate
+        data: { ...book, customDueDate: customDueDate }, 
         price: finalPrice 
     };
     cart.push(item); saveCart(); updateCartBadge(); 
@@ -276,7 +279,7 @@ function addBookToCart(book, actionType) {
     closeModal();
 }
 function removeFromCart(index) { 
-    // [LOGIC MỚI] Chặn xóa nếu là phí phạt
+    // Chặn xóa nếu là phí phạt
     if (cart[index] && cart[index].type === 'fine') {
         notify("⚠️ Đây là khoản phí bắt buộc, bạn không thể xóa!", "error");
         return;
@@ -320,7 +323,6 @@ function renderCart() {
             typeLabel = '<span class="tag" style="background:#fff1f0; color:#f5222d; border:1px solid #ffa39e">Bắt buộc</span>';
         }
 
-        // [LOGIC MỚI] Kiểm tra để hiển thị nút xóa hoặc nút khóa
         let actionBtn = `<button class="btn-del" style="color:#ff4d4f; border-color:#ff4d4f;" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i> Xóa</button>`;
         if (item.type === 'fine') {
             actionBtn = `<button class="btn-del" style="background:#f5f5f5; color:#999; border-color:#ddd; cursor:not-allowed;" disabled title="Phí phạt là bắt buộc"><i class="fas fa-lock"></i> Bắt buộc</button>`;
@@ -338,10 +340,10 @@ async function processCheckout() {
     const btn = document.querySelector('.btn-checkout'); const oldText = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...'; btn.disabled = true;
     try {
         let borrowCount = 0, buyCount = 0, cardCreated = false; const invoiceLog = [];
+        
         for (const item of cart) {
             if (item.type === 'book') {
                 if (item.action === 'borrow') {
-                    // [UPDATED] Truyền customDueDate vào hàm borrowBook
                     const res = await DB.borrowBook(currentUser.id, item.data.id, 'borrowing', item.data.customDueDate);
                     if (res.success) { borrowCount++; invoiceLog.push({ id: `LOAN-${Date.now()}-${Math.floor(Math.random()*1000)}`, content: `Mượn sách: ${item.data.name}`, amount: 0, date: new Date().toISOString() }); }
                 } else {
@@ -352,18 +354,30 @@ async function processCheckout() {
                 const cData = item.data; const today = new Date(); if(cData.plan === '1m') today.setMonth(today.getMonth() + 1); else if(cData.plan === '6m') today.setMonth(today.getMonth() + 6); else today.setFullYear(today.getFullYear() + 1);
                 cData.expiry = today.toISOString(); localStorage.setItem('dlib_card_' + currentUser.id, JSON.stringify(cData)); cardCreated = true;
                 invoiceLog.push({ id: `INV-CARD-${Date.now()}`, content: `Đăng ký thẻ thư viện (${cData.planName})`, amount: item.price, date: new Date().toISOString() });
-            } else if (item.type === 'fine') {
-                await DB.payFine(item.data.loanId);
-                invoiceLog.push({ id: `FINE-${Date.now()}`, content: `Nộp phạt quá hạn: ${item.data.bookName}`, amount: item.price, date: new Date().toISOString() });
+            } 
+            // [UPDATED] Xử lý thanh toán phạt
+            else if (item.type === 'fine') {
+                const paidSuccess = await DB.payFine(item.data.loanId);
+                if (paidSuccess) {
+                    invoiceLog.push({ id: `FINE-${Date.now()}`, content: `Nộp phạt quá hạn: ${item.data.bookName}`, amount: item.price, date: new Date().toISOString() });
+                } else {
+                    // Nếu lỗi (do chưa có cột fine_paid), báo lỗi và dừng thanh toán
+                    throw new Error(`Không thể cập nhật trạng thái nộp phạt cho sách "${item.data.bookName}". Vui lòng báo Admin!`);
+                }
             }
         }
+
         let oldInvoices = JSON.parse(localStorage.getItem('dlib_invoices_' + currentUser.id)) || []; let newInvoices = [...invoiceLog, ...oldInvoices]; localStorage.setItem('dlib_invoices_' + currentUser.id, JSON.stringify(newInvoices));
         let msg = "✅ Giao dịch hoàn tất!"; if(borrowCount > 0) msg += `<br>- Đã mượn ${borrowCount} sách.`; if(buyCount > 0) msg += `<br>- Đã mua ${buyCount} sách.`; if(cardCreated) msg += `<br>- Kích hoạt thẻ thành công!`;
         
         notify(msg, "success"); 
         cart = []; saveCart(); updateCartBadge(); renderCart();
+        
+        // Cập nhật lại thống kê tiền phạt ngay lập tức
+        loadStats();
+
         if(cardCreated) { const cardTabBtn = document.querySelector('li[onclick*="card-register"]'); if(cardTabBtn) switchTab('card-register', cardTabBtn); } else { const historyTabBtn = document.querySelector('li[onclick*="loans"]'); if(historyTabBtn) switchTab('loans', historyTabBtn); }
-    } catch (e) { console.error(e); notify("⚠️ Lỗi hệ thống: " + e.message, "error"); } finally { btn.innerHTML = oldText; btn.disabled = false; }
+    } catch (e) { console.error(e); notify("⚠️ " + e.message, "error"); } finally { btn.innerHTML = oldText; btn.disabled = false; }
 }
 
 async function renderLoans() {
@@ -432,6 +446,7 @@ async function checkOverdueAndFines() {
     let hasNewFine = false;
 
     loans.forEach(l => {
+        // [UPDATED] Kiểm tra thêm điều kiện !l.fine_paid (chưa trả mới tính)
         if (l.status === 'borrowing' && new Date(l.due_date) < today && !l.fine_paid) {
             
             const dueDate = new Date(l.due_date);
@@ -459,6 +474,14 @@ async function checkOverdueAndFines() {
 document.addEventListener('DOMContentLoaded', () => { 
     loadStats(); updateCartBadge(); checkOverdueAndFines();
     if(currentUser.avatar_url) { const hAvatar = document.getElementById('header-avatar'); if(hAvatar) hAvatar.src = currentUser.avatar_url; } 
+    
+    // Check dark mode logic
+    const savedTheme = localStorage.getItem('dlib_theme');
+    const checkbox = document.getElementById('darkModeCheckbox');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        if(checkbox) checkbox.checked = true;
+    }
 });
 
 function toggleFavorite(event, bookId) {
@@ -486,9 +509,6 @@ function renderFavorites() {
     });
 }
 
-// --- [NEW] LOGIC DARK MODE ---
-
-// 1. Hàm bật/tắt khi gạt nút
 function toggleTheme(checkbox) {
     if (checkbox.checked) {
         document.body.classList.add('dark-mode');
@@ -498,15 +518,3 @@ function toggleTheme(checkbox) {
         localStorage.setItem('dlib_theme', 'light');
     }
 }
-
-// 2. Tự động kiểm tra trạng thái khi tải trang
-document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('dlib_theme');
-    const checkbox = document.getElementById('darkModeCheckbox');
-    
-    // Nếu đã lưu là dark, thì bật class và gạt nút sang phải
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-        if(checkbox) checkbox.checked = true;
-    }
-});
