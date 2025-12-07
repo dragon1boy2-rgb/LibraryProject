@@ -93,30 +93,47 @@ async function renderLibrary() {
 function handleLibSearch() { currentLibPage = 1; renderLibrary(); }
 function changeLibPage(dir) { currentLibPage += dir; renderLibrary(); }
 
+// --- [ĐÃ CẬP NHẬT] RENDER RESOURCES VỚI LOGIC SẮP XẾP ---
 async function renderResources() {
     const grid = document.getElementById('resource-grid');
     let keyword = document.getElementById('search-resource').value.toLowerCase().trim();
     const searchKeyForOnline = keyword || "Sách kỹ năng"; 
+    
     if (allResources.length === 0) { allResources = await DB.getResources(); }
+    
     const activeFilter = document.querySelector('#res-filters .tag.active').innerText;
     let localFiltered = allResources.filter(r => {
         const matchKey = r.name.toLowerCase().includes(keyword);
         const matchType = activeFilter === 'Tất cả' || r.type === activeFilter;
         return matchKey && matchType;
     });
+    
     let onlineResources = [];
     if (activeFilter === 'Tất cả' || activeFilter === 'Ebook') { const ebooks = await DB.searchOnlineEbooks(searchKeyForOnline); onlineResources = [...onlineResources, ...ebooks]; }
     if (activeFilter === 'PDF') { const pdfs = await DB.searchOnlinePDFs(searchKeyForOnline); onlineResources = [...onlineResources, ...pdfs]; }
     if (activeFilter === 'Video') { const videos = await DB.getSuggestedVideos(); onlineResources = [...onlineResources, ...videos]; }
+    
+    // Gộp dữ liệu
     currentResFiltered = [...localFiltered, ...onlineResources];
+
+    // [MỚI] Sắp xếp: Ưu tiên tài liệu có ảnh bìa lên trước
+    currentResFiltered.sort((a, b) => {
+        const hasImgA = (a.image_url && a.image_url.trim() !== '') ? 1 : 0;
+        const hasImgB = (b.image_url && b.image_url.trim() !== '') ? 1 : 0;
+        return hasImgB - hasImgA;
+    });
+
     const totalPages = Math.ceil(currentResFiltered.length / ITEMS_PER_PAGE);
     if (currentResPage < 1) currentResPage = 1;
     if (currentResPage > totalPages && totalPages > 0) currentResPage = totalPages;
+    
     const start = (currentResPage - 1) * ITEMS_PER_PAGE;
     const end = start + ITEMS_PER_PAGE;
     const itemsToShow = currentResFiltered.slice(start, end);
+    
     grid.innerHTML = '';
     if(itemsToShow.length === 0) { grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888; padding: 30px;">Không tìm thấy tài liệu nào.</p>'; document.getElementById('res-pagination').style.display = 'none'; return; }
+    
     itemsToShow.forEach(r => {
         let iconClass = 'fa-file-alt', iconColor = '#777', badgeClass = 'tag'; 
         if (r.is_online) { 
@@ -380,18 +397,57 @@ async function processCheckout() {
     } catch (e) { console.error(e); notify("⚠️ " + e.message, "error"); } finally { btn.innerHTML = oldText; btn.disabled = false; }
 }
 
+// --- [ĐÃ CẬP NHẬT] RENDER LOANS VỚI LOGIC STATUS CHÍNH XÁC ---
 async function renderLoans() {
-    const tbody = document.getElementById('loan-list'); tbody.innerHTML = '<tr><td colspan="5">Đang tải dữ liệu...</td></tr>';
-    if (!currentUser || !currentUser.id) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Vui lòng đăng nhập lại.</td></tr>'; return; }
-    const loans = await DB.getMyLoans(currentUser.id); tbody.innerHTML = '';
-    if(loans.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Bạn chưa mượn cuốn sách nào.</td></tr>'; return; }
+    const tbody = document.getElementById('loan-list'); 
+    tbody.innerHTML = '<tr><td colspan="5">Đang tải dữ liệu...</td></tr>';
+    
+    if (!currentUser || !currentUser.id) { 
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Vui lòng đăng nhập lại.</td></tr>'; 
+        return; 
+    }
+    
+    const loans = await DB.getMyLoans(currentUser.id); 
+    tbody.innerHTML = '';
+    
+    if(loans.length === 0) { 
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Bạn chưa mượn cuốn sách nào.</td></tr>'; 
+        return; 
+    }
+    
     loans.forEach(l => {
-        let badge = ''; if(l.status === 'borrowing') badge = '<span class="tag tag-blue">Đang mượn</span>'; else if(l.status === 'returned') badge = '<span class="tag" style="background:#ccc; color:#555">Đã trả</span>'; else badge = '<span class="tag tag-purple">Đặt trước</span>';
-        let action = l.status === 'borrowing' ? `<button class="btn-del" style="color:#1890ff; border:1px solid #1890ff" onclick="handleReturn(${l.id}, ${l.book_id})">Trả sách</button>` : '-';
-        let bookName = l.books ? l.books.name : "Sách đã xóa"; let dueDate = l.due_date ? new Date(l.due_date).toLocaleDateString() : '-';
+        let badge = ''; 
+        let action = '-';
+
+        // Xử lý status chính xác
+        if(l.status === 'borrowing') {
+            badge = '<span class="tag tag-blue">Đang mượn</span>';
+            action = `<button class="btn-del" style="color:#1890ff; border:1px solid #1890ff" onclick="handleReturn(${l.id}, ${l.book_id})">Trả sách</button>`;
+        } 
+        else if(l.status === 'returned') {
+            badge = '<span class="tag" style="background:#ccc; color:#555">Đã trả</span>';
+        } 
+        else if(l.status === 'reserved') {
+            badge = '<span class="tag tag-purple">Đặt trước</span>';
+        }
+        else if(l.status === 'sold') {
+            badge = '<span class="tag" style="background:#f6ffed; color:#52c41a; border:1px solid #b7eb8f">Đã mua</span>';
+        }
+        else if(l.status === 'overdue') {
+             badge = '<span class="tag" style="background:#fff1f0; color:#f5222d; border:1px solid #ffa39e">Quá hạn</span>';
+             action = `<button class="btn-del" style="color:#1890ff; border:1px solid #1890ff" onclick="handleReturn(${l.id}, ${l.book_id})">Trả sách</button>`;
+        }
+        else {
+            badge = `<span class="tag" style="background:#eee;">${l.status}</span>`;
+        }
+
+        let bookName = l.books ? l.books.name : "Sách đã xóa"; 
+        let dueDate = l.due_date ? new Date(l.due_date).toLocaleDateString() : '-';
+        
         tbody.innerHTML += `<tr><td><strong>${bookName}</strong></td><td>${new Date(l.borrow_date).toLocaleDateString()}</td><td>${dueDate}</td><td>${badge}</td><td>${action}</td></tr>`;
     });
 }
+
 async function handleReturn(loanId, bookId) { 
     if(confirm("Xác nhận trả sách này?")) { 
         if(await DB.returnBook(loanId, bookId)) { 
